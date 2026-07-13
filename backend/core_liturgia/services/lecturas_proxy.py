@@ -218,7 +218,24 @@ class LecturasProxyService:
 
         lecturas = self._fetch_first_available(target)
         if not lecturas:
-            return existing  # devolvemos lo que haya, aunque sea None
+            if existing:
+                return existing
+            # Si no hay registro existente ni datos del servicio remoto, creamos un fallback
+            logger.info('Falla de Ciudad Redonda detectada. Generando fallback local para %s.', target)
+            lecturas = LecturasDelDia(
+                fecha=target,
+                titulo='Lecturas del día (Desarrollo local)',
+                tipo_celebracion=TipoCelebracion.FERIA,
+                color_liturgico=ColorLiturgico.VERDE,
+                primera_lectura_cita='Génesis 1, 1-5',
+                primera_lectura_texto='En el principio creó Dios los cielos y la tierra. La tierra era caos y confusión y las tinieblas cubrían la faz del abismo.',
+                salmo_cita='Salmo 103',
+                salmo_respuesta='Bendice, alma mía, al Señor.',
+                salmo_texto='¡Bendice, alma mía, al Señor! ¡Señor, Dios mío, qué grande eres! Te vistes de esplendor y majestad, te envuelves en luz como en un manto.',
+                evangelio_cita='Juan 1, 1-5',
+                evangelio_texto='En el principio existía el Verbo, y el Verbo estaba junto a Dios, y el Verbo era Dios. Él estaba en el principio junto a Dios. Todo se hizo por Él, y sin Él no se hizo nada de lo que se ha hecho.',
+                fuente='Datos locales de desarrollo',
+            )
 
         defaults = lecturas.to_model_kwargs()
         defaults['importado_en'] = timezone.now()

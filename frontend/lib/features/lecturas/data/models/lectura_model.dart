@@ -43,8 +43,31 @@ class LecturaModel extends Lectura {
           reflexion: reflexion,
         );
 
-  factory LecturaModel.fromJson(Map<String, dynamic> json) =>
-      _$LecturaModelFromJson(json);
+  factory LecturaModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> parseSubJson(dynamic val) {
+      if (val is Map<String, dynamic>) return val;
+      if (val is Map) return Map<String, dynamic>.from(val);
+      return const <String, dynamic>{};
+    }
+
+    return LecturaModel(
+      id: (json['id'] ?? '').toString(),
+      fecha: json['fecha'] != null
+          ? DateTime.tryParse(json['fecha'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      tiempoLiturgico: (json['tiempoLiturgico'] ?? json['tiempo_liturgico'] ?? '').toString(),
+      colorLiturgico: (json['colorLiturgico'] ?? json['color_liturgico'] ?? '').toString(),
+      primeraLectura: PrimeraLecturaModel.fromJson(parseSubJson(json['primeraLectura'] ?? json['primera_lectura'])),
+      salmo: SalmoModel.fromJson(parseSubJson(json['salmo'])),
+      segundaLectura: (json['segundaLectura'] ?? json['segunda_lectura']) != null
+          ? SegundaLecturaModel.fromJson(parseSubJson(json['segundaLectura'] ?? json['segunda_lectura']))
+          : null,
+      evangelio: EvangelioModel.fromJson(parseSubJson(json['evangelio'])),
+      reflexion: (json['reflexion'] ?? json['reflexion_texto']) != null
+          ? ReflexionModel.fromJson(parseSubJson(json['reflexion'] ?? json['reflexion_texto']))
+          : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => _$LecturaModelToJson(this);
 
@@ -89,8 +112,13 @@ class PrimeraLecturaModel extends PrimeraLectura {
     required super.texto,
   });
 
-  factory PrimeraLecturaModel.fromJson(Map<String, dynamic> json) =>
-      _$PrimeraLecturaModelFromJson(json);
+  factory PrimeraLecturaModel.fromJson(Map<String, dynamic> json) {
+    return PrimeraLecturaModel(
+      titulo: (json['titulo'] ?? '').toString(),
+      referencia: (json['referencia'] ?? json['cita'] ?? '').toString(),
+      texto: (json['texto'] ?? '').toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$PrimeraLecturaModelToJson(this);
 }
@@ -104,8 +132,14 @@ class SalmoModel extends Salmo {
     required super.respuesta,
   });
 
-  factory SalmoModel.fromJson(Map<String, dynamic> json) =>
-      _$SalmoModelFromJson(json);
+  factory SalmoModel.fromJson(Map<String, dynamic> json) {
+    return SalmoModel(
+      titulo: (json['titulo'] ?? '').toString(),
+      referencia: (json['referencia'] ?? json['cita'] ?? '').toString(),
+      texto: (json['texto'] ?? '').toString(),
+      respuesta: (json['respuesta'] ?? '').toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$SalmoModelToJson(this);
 }
@@ -118,8 +152,13 @@ class SegundaLecturaModel extends SegundaLectura {
     required super.texto,
   });
 
-  factory SegundaLecturaModel.fromJson(Map<String, dynamic> json) =>
-      _$SegundaLecturaModelFromJson(json);
+  factory SegundaLecturaModel.fromJson(Map<String, dynamic> json) {
+    return SegundaLecturaModel(
+      titulo: (json['titulo'] ?? '').toString(),
+      referencia: (json['referencia'] ?? json['cita'] ?? '').toString(),
+      texto: (json['texto'] ?? '').toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$SegundaLecturaModelToJson(this);
 }
@@ -132,8 +171,13 @@ class EvangelioModel extends Evangelio {
     required super.texto,
   });
 
-  factory EvangelioModel.fromJson(Map<String, dynamic> json) =>
-      _$EvangelioModelFromJson(json);
+  factory EvangelioModel.fromJson(Map<String, dynamic> json) {
+    return EvangelioModel(
+      titulo: (json['titulo'] ?? '').toString(),
+      referencia: (json['referencia'] ?? json['cita'] ?? '').toString(),
+      texto: (json['texto'] ?? '').toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$EvangelioModelToJson(this);
 }
@@ -146,8 +190,13 @@ class ReflexionModel extends Reflexion {
     required super.texto,
   });
 
-  factory ReflexionModel.fromJson(Map<String, dynamic> json) =>
-      _$ReflexionModelFromJson(json);
+  factory ReflexionModel.fromJson(Map<String, dynamic> json) {
+    return ReflexionModel(
+      titulo: (json['titulo'] ?? '').toString(),
+      fuente: (json['fuente'] ?? json['autor'] ?? '').toString(),
+      texto: (json['texto'] ?? '').toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$ReflexionModelToJson(this);
 }

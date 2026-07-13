@@ -9,6 +9,12 @@ from .models import (
     MisaHorario,
     VideoMisa,
     IntencionOracion,
+    Santo,
+    Evento,
+    ParroquiaInfo,
+    OficinaInfo,
+    Oracion,
+    OracionSeccion,
 )
 
 
@@ -102,3 +108,43 @@ class IntencionOracionAdmin(admin.ModelAdmin):
     @admin.display(description='Intención')
     def intencion_corta(self, obj):
         return (obj.intencion[:80] + '…') if len(obj.intencion) > 80 else obj.intencion
+
+
+@admin.register(Santo)
+class SantoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'titulo', 'fecha_celebracion', 'patrono')
+    search_fields = ('nombre', 'biografia', 'patrono')
+
+
+@admin.register(Evento)
+class EventoAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'fecha', 'hora', 'lugar', 'categoria', 'activo')
+    list_filter = ('categoria', 'activo', 'fecha')
+    search_fields = ('titulo', 'descripcion', 'lugar')
+
+
+@admin.register(ParroquiaInfo)
+class ParroquiaInfoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'telefono', 'email', 'actualizado_en')
+
+
+@admin.register(OficinaInfo)
+class OficinaInfoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'telefono', 'email', 'actualizado_en')
+
+
+class OracionSeccionInline(admin.TabularInline):
+    model = OracionSeccion
+    extra = 1
+    ordering = ('orden',)
+
+
+@admin.register(Oracion)
+class OracionAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'categoria', 'activo', 'destacada', 'orden', 'creado_en', 'actualizado_en')
+    list_filter = ('categoria', 'activo', 'destacada')
+    search_fields = ('titulo', 'descripcion', 'contenido')
+    prepopulated_fields = {'slug': ('titulo',)}
+    list_editable = ('activo', 'destacada', 'orden')
+    inlines = [OracionSeccionInline]
+

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/santo.dart';
 
@@ -20,8 +21,59 @@ class SantoModel extends Santo {
     required super.updatedAt,
   });
 
-  factory SantoModel.fromJson(Map<String, dynamic> json) =>
-      _$SantoModelFromJson(json);
+  factory SantoModel.fromJson(Map<String, dynamic> json) {
+    // 1. Resolve patrono to a String (join lists if needed)
+    String patronoStr = '';
+    final patVal = json['patrono'];
+    if (patVal is List) {
+      patronoStr = patVal.join(', ');
+    } else if (patVal != null) {
+      patronoStr = patVal.toString();
+    }
+
+    // 2. Parse fechaCelebracion (handling MM-DD or DateTime)
+    final String fcStr = (json['fechaCelebracion'] ?? '').toString();
+    DateTime parsedDate = DateTime.now();
+    if (fcStr.isNotEmpty) {
+      if (fcStr.length == 5 && fcStr.contains('-')) {
+        final parts = fcStr.split('-');
+        final mesVal = int.tryParse(parts[0]) ?? 1;
+        final diaVal = int.tryParse(parts[1]) ?? 1;
+        parsedDate = DateTime(DateTime.now().year, mesVal, diaVal);
+      } else {
+        parsedDate = DateTime.tryParse(fcStr) ?? DateTime.now();
+      }
+    }
+
+    // 3. Parse atributos (List<String>)
+    List<String> parsedAtributos = [];
+    final atrVal = json['atributos'];
+    if (atrVal is List) {
+      parsedAtributos = atrVal.map((e) => e.toString()).toList();
+    } else if (atrVal is String) {
+      try {
+        final decoded = jsonDecode(atrVal);
+        if (decoded is List) {
+          parsedAtributos = decoded.map((e) => e.toString()).toList();
+        }
+      } catch (_) {}
+    }
+
+    return SantoModel(
+      id: (json['id'] ?? '').toString(),
+      nombre: (json['nombre'] ?? '').toString(),
+      titulo: json['titulo']?.toString() ?? '',
+      fechaCelebracion: parsedDate,
+      biografia: (json['biografia'] ?? '').toString(),
+      festividad: (json['festividad'] ?? '').toString(),
+      patrono: patronoStr,
+      oracion: (json['oracion'] ?? '').toString(),
+      imagenUrl: json['imagenUrl']?.toString() ?? json['imagen_url']?.toString(),
+      atributos: parsedAtributos,
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now() : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now() : DateTime.now(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$SantoModelToJson(this);
 

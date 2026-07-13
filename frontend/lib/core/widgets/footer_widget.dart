@@ -15,10 +15,6 @@ class StandardFooter extends StatelessWidget {
     final bool isHome = GoRouterState.of(context).uri.path == '/';
 
     return Container(
-      // Antes: height fija (100/140) causaba RenderFlex overflow de 1px en
-      // ciertas densidades. Ahora `minHeight` permite que el footer crezca
-      // si el contenido lo necesita, sin desbordar.
-      constraints: BoxConstraints(minHeight: isHome ? 104 : 144),
       decoration: const BoxDecoration(
         gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.only(
@@ -33,56 +29,66 @@ class StandardFooter extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (!isHome) ...[
-            TextButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.home_rounded, color: Colors.white, size: 20),
-              label: Text(
-                'VOLVER AL INICIO',
-                style: AppTheme.caption.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(255, 255, 255, 0.1),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingM),
-          ],
-          Text(
-            'Síguenos en nuestras redes',
-            style: AppTheme.caption.copyWith(
-              color: const Color.fromRGBO(255, 255, 255, 0.9),
-              fontWeight: FontWeight.w500,
-            ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: isHome ? 12.0 : 16.0,
+            bottom: 12.0,
+            left: 16.0,
+            right: 16.0,
           ),
-          const SizedBox(height: AppTheme.spacingM),
-          Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSocialButton(FontAwesomeIcons.facebook, () {}),
-              const SizedBox(width: AppTheme.spacingM),
-              _buildSocialButton(FontAwesomeIcons.instagram, () {}),
-              const SizedBox(width: AppTheme.spacingM),
-              _buildSocialButton(FontAwesomeIcons.xTwitter, () {}),
-              const SizedBox(width: AppTheme.spacingM),
-              _buildSocialButton(FontAwesomeIcons.youtube, () {}),
-              const SizedBox(width: AppTheme.spacingM),
-              _buildSocialButton(FontAwesomeIcons.tiktok, () {}),
+              if (!isHome) ...[
+                TextButton.icon(
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(Icons.home_rounded, color: Colors.white, size: 20),
+                  label: Text(
+                    'VOLVER AL INICIO',
+                    style: AppTheme.caption.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(255, 255, 255, 0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingS),
+              ],
+              Text(
+                'Síguenos en nuestras redes',
+                style: AppTheme.caption.copyWith(
+                  color: const Color.fromRGBO(255, 255, 255, 0.9),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacingS),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildSocialButton(FontAwesomeIcons.facebook, () {}),
+                  const SizedBox(width: AppTheme.spacingM),
+                  _buildSocialButton(FontAwesomeIcons.instagram, () {}),
+                  const SizedBox(width: AppTheme.spacingM),
+                  _buildSocialButton(FontAwesomeIcons.xTwitter, () {}),
+                  const SizedBox(width: AppTheme.spacingM),
+                  _buildSocialButton(FontAwesomeIcons.youtube, () {}),
+                  const SizedBox(width: AppTheme.spacingM),
+                  _buildSocialButton(FontAwesomeIcons.tiktok, () {}),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: AppTheme.spacingS),
-        ],
+        ),
       ),
     );
   }

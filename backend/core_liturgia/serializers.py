@@ -8,6 +8,12 @@ from .models import (
     MisaHorario,
     VideoMisa,
     IntencionOracion,
+    Santo,
+    Evento,
+    ParroquiaInfo,
+    OficinaInfo,
+    Oracion,
+    OracionSeccion,
 )
 
 
@@ -88,3 +94,96 @@ class IntencionOracionPublicaSerializer(serializers.ModelSerializer):
         model = IntencionOracion
         fields = ('id', 'nombre', 'intencion', 'creado_en')
         read_only_fields = fields
+
+
+class SantoSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    created_at = serializers.DateTimeField(source='creado_en', read_only=True)
+    updated_at = serializers.DateTimeField(source='actualizado_en', read_only=True)
+
+    class Meta:
+        model = Santo
+        fields = (
+            'id', 'nombre', 'titulo', 'fecha_celebracion', 'biografia',
+            'festividad', 'patrono', 'oracion', 'imagen_url', 'atributos',
+            'created_at', 'updated_at',
+        )
+
+
+class EventoSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    created_at = serializers.DateTimeField(source='creado_en', read_only=True)
+    updated_at = serializers.DateTimeField(source='actualizado_en', read_only=True)
+
+    class Meta:
+        model = Evento
+        fields = (
+            'id', 'titulo', 'descripcion', 'fecha', 'hora', 'lugar',
+            'categoria', 'imagen_url', 'es_recurrente', 'frecuencia_recurrencia',
+            'maximo_participantes', 'participantes_actuales', 'requiere_inscripcion',
+            'contacto_responsable', 'telefono', 'email', 'etiquetas', 'activo',
+            'created_at', 'updated_at',
+        )
+
+
+class ParroquiaInfoSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    actualizado_en = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = ParroquiaInfo
+        fields = (
+            'id', 'nombre', 'historia', 'mision', 'vision', 'valores',
+            'imagenes', 'direccion', 'telefono', 'email', 'actualizado_en',
+        )
+
+
+class OficinaInfoSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    actualizado_en = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = OficinaInfo
+        fields = (
+            'id', 'direccion', 'telefono', 'email', 'horarios', 'servicios',
+            'latitud', 'longitud', 'actualizado_en',
+        )
+
+
+# ============================================================
+# Serializadores de Oraciones
+# ============================================================
+class OracionSeccionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OracionSeccion
+        fields = ('id', 'titulo', 'contenido', 'orden')
+
+
+class OracionSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    created_at = serializers.DateTimeField(source='creado_en', read_only=True)
+    updated_at = serializers.DateTimeField(source='actualizado_en', read_only=True)
+
+    class Meta:
+        model = Oracion
+        fields = (
+            'id', 'titulo', 'slug', 'categoria', 'descripcion', 'contenido',
+            'orden', 'activo', 'destacada', 'duracion_estimada',
+            'created_at', 'updated_at',
+        )
+
+
+class OracionDetalleSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    secciones = OracionSeccionSerializer(many=True, read_only=True)
+    created_at = serializers.DateTimeField(source='creado_en', read_only=True)
+    updated_at = serializers.DateTimeField(source='actualizado_en', read_only=True)
+
+    class Meta:
+        model = Oracion
+        fields = (
+            'id', 'titulo', 'slug', 'categoria', 'descripcion', 'contenido',
+            'secciones', 'orden', 'activo', 'destacada', 'duracion_estimada',
+            'created_at', 'updated_at',
+        )
+

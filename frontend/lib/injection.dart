@@ -57,6 +57,15 @@ import 'features/oficina/domain/repositories/oficina_repository.dart';
 import 'features/oficina/domain/usecases/get_oficina_info.dart';
 import 'features/oficina/presentation/providers/oficina_provider.dart';
 
+import 'features/oraciones/data/datasources/oraciones_remote_datasource.dart';
+import 'features/oraciones/data/datasources/oraciones_remote_datasource_impl.dart';
+import 'features/oraciones/data/repositories/oraciones_repository_impl.dart';
+import 'features/oraciones/domain/repositories/oraciones_repository.dart';
+import 'features/oraciones/domain/usecases/get_oraciones.dart';
+import 'features/oraciones/domain/usecases/get_oraciones_destacadas.dart';
+import 'features/oraciones/domain/usecases/get_oraciones_por_categoria.dart';
+import 'features/oraciones/domain/usecases/get_oracion_detalle.dart';
+
 // Este archivo será generado por injectable_generator
 // import 'injection.config.dart';
 
@@ -80,7 +89,7 @@ Future<void> configureDependencies() async {
 
   // ========== Lecturas Feature ==========
   getIt.registerLazySingleton<LecturasRemoteDataSource>(
-      () => LecturasRemoteDataSourceImpl(dioClient: getIt<DioClient>()));
+      () => LecturasRemoteDataSourceImpl(getIt<DioClient>()));
   getIt.registerLazySingleton<LecturasLocalDataSource>(
       () => LecturasLocalDataSourceImpl(cacheManager: getIt<CacheManager>()));
   getIt.registerLazySingleton<LecturasRepository>(() => LecturasRepositoryImpl(
@@ -178,6 +187,22 @@ Future<void> configureDependencies() async {
       () => GetOficinaInfo(getIt<OficinaRepository>()));
   getIt.registerFactory<OficinaNotifier>(
       () => OficinaNotifier(getIt<GetOficinaInfo>()));
+
+  // ========== Oraciones Feature ==========
+  getIt.registerLazySingleton<OracionesRemoteDataSource>(
+      () => OracionesRemoteDataSourceImpl(getIt<DioClient>()));
+  getIt.registerLazySingleton<OracionesRepository>(() => OracionesRepositoryImpl(
+        remoteDataSource: getIt<OracionesRemoteDataSource>(),
+        networkInfo: getIt<NetworkInfo>(),
+      ));
+  getIt.registerLazySingleton<GetOraciones>(
+      () => GetOraciones(getIt<OracionesRepository>()));
+  getIt.registerLazySingleton<GetOracionesDestacadas>(
+      () => GetOracionesDestacadas(getIt<OracionesRepository>()));
+  getIt.registerLazySingleton<GetOracionesPorCategoria>(
+      () => GetOracionesPorCategoria(getIt<OracionesRepository>()));
+  getIt.registerLazySingleton<GetOracionDetalle>(
+      () => GetOracionDetalle(getIt<OracionesRepository>()));
 }
 
 @module

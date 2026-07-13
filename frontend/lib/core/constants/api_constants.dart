@@ -33,9 +33,9 @@ class ApiConstants {
 
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) return _envBaseUrl;
-    if (kIsWeb) return 'http://localhost:$_devPort$_apiPrefix';
+    if (kIsWeb) return 'http://127.0.0.1:$_devPort$_apiPrefix';
     if (Platform.isAndroid) return 'http://10.0.2.2:$_devPort$_apiPrefix';
-    return 'http://localhost:$_devPort$_apiPrefix';
+    return 'http://127.0.0.1:$_devPort$_apiPrefix';
   }
 
   static String get webBaseUrl => baseUrl;
@@ -78,6 +78,11 @@ class ApiConstants {
   static const String eventos = '/eventos/';
   static const String eventosActivos = '/eventos/activos/';
   static const String eventosPorCategoria = '/eventos/categoria/';
+
+  // -- Oraciones --
+  static const String oraciones = '/oraciones/';
+  static const String oracionesDestacadas = '/oraciones/destacadas/';
+  static const String oracionesCategoria = '/oraciones/categoria/';
 
   // -- Noticias / Parroquia / Oficina --
   static const String noticias = '/noticias/';

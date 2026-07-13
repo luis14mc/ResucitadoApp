@@ -182,7 +182,7 @@ class HomePage extends ConsumerWidget {
             final section = homeState.sections[index];
             return _buildModernCard(context, section);
           },
-          childCount: 6,
+          childCount: homeState.sections.isEmpty ? 7 : homeState.sections.length,
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -221,9 +221,15 @@ class HomePage extends ConsumerWidget {
         'route': '/nuestraParroquia',
       },
       {
+        'title': 'Oraciones',
+        'subtitle': 'Lectio, Rosario y más',
+        'icon': FontAwesomeIcons.handsPraying,
+        'route': '/oraciones',
+      },
+      {
         'title': 'Oficina Parroquial',
         'subtitle': 'Contacto y servicios',
-        'icon': FontAwesomeIcons.handsPraying,
+        'icon': FontAwesomeIcons.briefcase,
         'route': '/oficinaParroquial',
       },
       {

@@ -286,3 +286,188 @@ class IntencionOracion(models.Model):
     def __str__(self):
         autor = self.nombre or 'Anónimo'
         return f'{autor} · {self.intencion[:60]}...'
+
+
+# ============================================================
+# Santo
+# ============================================================
+class Santo(models.Model):
+    nombre = models.CharField(max_length=120)
+    titulo = models.CharField(max_length=180, blank=True)
+    fecha_celebracion = models.DateField(
+        help_text='Día y mes de la celebración (el año se puede ignorar o usar el actual).',
+    )
+    biografia = models.TextField(blank=True)
+    festividad = models.CharField(max_length=120, blank=True)
+    patrono = models.CharField(max_length=120, blank=True)
+    oracion = models.TextField(blank=True)
+    imagen_url = models.CharField(max_length=255, blank=True, null=True)
+    atributos = models.JSONField(default=list, blank=True)
+    
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Santo'
+        verbose_name_plural = 'Santos'
+        ordering = ['fecha_celebracion']
+
+    def __str__(self):
+        return self.nombre
+
+
+# ============================================================
+# Evento
+# ============================================================
+class Evento(models.Model):
+    class Categoria(models.TextChoices):
+        LITURGIA = 'liturgia', 'Liturgia'
+        COMUNIDAD = 'comunidad', 'Comunidad'
+        JUVENTUD = 'juventud', 'Juventud'
+        FORMACION = 'formacion', 'Formación'
+        MISION = 'mision', 'Misión'
+
+    titulo = models.CharField(max_length=180)
+    descripcion = models.TextField(blank=True)
+    fecha = models.DateField()
+    hora = models.CharField(max_length=30)
+    lugar = models.CharField(max_length=120)
+    categoria = models.CharField(
+        max_length=20,
+        choices=Categoria.choices,
+        default=Categoria.COMUNIDAD,
+    )
+    imagen_url = models.CharField(max_length=255, blank=True, null=True)
+    es_recurrente = models.BooleanField(default=False)
+    frecuencia_recurrencia = models.CharField(max_length=120, blank=True, null=True)
+    maximo_participantes = models.PositiveIntegerField(blank=True, null=True)
+    participantes_actuales = models.PositiveIntegerField(default=0)
+    requiere_inscripcion = models.BooleanField(default=False)
+    contacto_responsable = models.CharField(max_length=120, blank=True, null=True)
+    telefono = models.CharField(max_length=30, blank=True, null=True)
+    email = models.CharField(max_length=120, blank=True, null=True)
+    etiquetas = models.JSONField(default=list, blank=True)
+    activo = models.BooleanField(default=True)
+    
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Evento'
+        verbose_name_plural = 'Eventos'
+        ordering = ['fecha', 'hora']
+
+    def __str__(self):
+        return self.titulo
+
+
+# ============================================================
+# ParroquiaInfo
+# ============================================================
+class ParroquiaInfo(models.Model):
+    nombre = models.CharField(max_length=120, default='Parroquia Cristo Resucitado')
+    historia = models.TextField(blank=True)
+    mision = models.TextField(blank=True)
+    vision = models.TextField(blank=True)
+    valores = models.JSONField(default=list, blank=True)
+    imagenes = models.JSONField(default=list, blank=True)
+    direccion = models.TextField(blank=True)
+    telefono = models.CharField(max_length=30, blank=True)
+    email = models.CharField(max_length=120, blank=True)
+    
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Información Parroquial'
+        verbose_name_plural = 'Información Parroquial'
+
+    def __str__(self):
+        return self.nombre
+
+
+# ============================================================
+# OficinaInfo
+# ============================================================
+class OficinaInfo(models.Model):
+    direccion = models.TextField(blank=True)
+    telefono = models.CharField(max_length=30, blank=True)
+    email = models.CharField(max_length=120, blank=True)
+    horarios = models.JSONField(default=dict, blank=True)
+    servicios = models.JSONField(default=list, blank=True)
+    latitud = models.FloatField(blank=True, null=True)
+    longitud = models.FloatField(blank=True, null=True)
+    
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Información de Oficina'
+        verbose_name_plural = 'Información de Oficina'
+
+    def __str__(self):
+        return 'Oficina Parroquial'
+
+
+# ============================================================
+# Oraciones y Secciones
+# ============================================================
+class CategoriaOracion(models.TextChoices):
+    LECTIO_DIVINA = 'lectio_divina', 'Lectio Divina'
+    LITURGIA_HORAS = 'liturgia_horas', 'Liturgia de las Horas'
+    ROSARIO = 'rosario', 'Santo Rosario'
+    CORONILLA = 'coronilla', 'Coronilla'
+    BASICAS = 'basicas', 'Oraciones Básicas'
+    INTENCIONES = 'intenciones', 'Oraciones por Intención'
+    NOVENAS = 'novenas', 'Novenas'
+
+
+class Oracion(models.Model):
+    titulo = models.CharField(max_length=180)
+    slug = models.SlugField(max_length=200, unique=True)
+    categoria = models.CharField(
+        max_length=30,
+        choices=CategoriaOracion.choices,
+        default=CategoriaOracion.BASICAS,
+    )
+    descripcion = models.TextField(blank=True)
+    contenido = models.TextField(blank=True, null=True, help_text="Contenido de la oración si es de texto simple.")
+    orden = models.IntegerField(default=0)
+    activo = models.BooleanField(default=True)
+    destacada = models.BooleanField(default=False)
+    duracion_estimada = models.PositiveIntegerField(default=5, help_text="Duración estimada de la oración en minutos.")
+
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Oración'
+        verbose_name_plural = 'Oraciones'
+        ordering = ['categoria', 'orden', 'titulo']
+        indexes = [
+            models.Index(fields=['categoria']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['activo']),
+            models.Index(fields=['destacada']),
+        ]
+
+    def __str__(self):
+        return f'{self.titulo} ({self.get_categoria_display()})'
+
+
+class OracionSeccion(models.Model):
+    oracion = models.ForeignKey(
+        Oracion,
+        related_name='secciones',
+        on_delete=models.CASCADE,
+    )
+    titulo = models.CharField(max_length=150)
+    contenido = models.TextField()
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Sección de Oración'
+        verbose_name_plural = 'Secciones de Oraciones'
+        ordering = ['orden']
+
+    def __str__(self):
+        return f'{self.oracion.titulo} - {self.titulo} ({self.orden})'
+

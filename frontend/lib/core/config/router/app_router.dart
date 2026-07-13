@@ -8,6 +8,9 @@ import '../../../features/horarios/presentation/pages/horarios_misa_page.dart';
 import '../../../features/emisiones/presentation/pages/emisiones_page.dart';
 import '../../../features/parroquia/presentation/pages/nuestra_parroquia_page.dart';
 import '../../../features/oficina/presentation/pages/oficina_parroquial_page.dart';
+import '../../../features/oraciones/presentation/pages/oraciones_page.dart';
+import '../../../features/oraciones/presentation/pages/oraciones_categoria_page.dart';
+import '../../../features/oraciones/presentation/pages/oracion_detalle_page.dart';
 
 /// Configuración de rutas de la aplicación usando GoRouter
 ///
@@ -21,6 +24,7 @@ class AppRouter {
   static const String nuestraParroquia = '/nuestraParroquia';
   static const String oficinaParroquial = '/oficinaParroquial';
   static const String horarios = '/horarios';
+  static const String oraciones = '/oraciones';
 
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -65,6 +69,27 @@ class AppRouter {
         path: horarios,
         name: 'horarios',
         builder: (context, state) => const HorariosMisaPage(),
+      ),
+      GoRoute(
+        path: oraciones,
+        name: 'oraciones',
+        builder: (context, state) => const OracionesPage(),
+      ),
+      GoRoute(
+        path: '$oraciones/categoria/:categoria',
+        name: 'oraciones_categoria',
+        builder: (context, state) {
+          final categoria = state.pathParameters['categoria'] ?? '';
+          return OracionesCategoriaPage(categoria: categoria);
+        },
+      ),
+      GoRoute(
+        path: '$oraciones/:slug',
+        name: 'oracion_detalle',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return OracionDetallePage(slug: slug);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -130,4 +155,7 @@ extension GoRouterExtension on BuildContext {
 
   /// Navega a horarios
   void goHorarios() => go(AppRouter.horarios);
+
+  /// Navega a oraciones
+  void goOraciones() => go(AppRouter.oraciones);
 }

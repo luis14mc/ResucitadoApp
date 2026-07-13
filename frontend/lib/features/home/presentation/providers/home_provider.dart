@@ -250,10 +250,17 @@ class HomeNotifier extends StateNotifier<HomeState> {
         route: '/nuestraParroquia',
       ),
       HomeSection(
+        id: 'oraciones',
+        title: 'Oraciones',
+        subtitle: 'Lectio, Rosario y más',
+        icon: FontAwesomeIcons.handsPraying,
+        route: '/oraciones',
+      ),
+      HomeSection(
         id: 'oficina',
         title: 'Oficina Parroquial',
         subtitle: 'Contacto y servicios',
-        icon: FontAwesomeIcons.handsPraying,
+        icon: FontAwesomeIcons.briefcase,
         route: '/oficinaParroquial',
       ),
       HomeSection(

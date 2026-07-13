@@ -24,7 +24,7 @@ SECRET_KEY = config(
 DEBUG = config('DEBUG', default=True, cast=bool)  # local-dev por defecto; en Railway pondrás DEBUG=False
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,10.0.2.2',
+    default='localhost,127.0.0.1,10.0.2.2,*',
     cast=Csv(),
 )
 
