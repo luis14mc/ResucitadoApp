@@ -30,8 +30,6 @@ _lecturas_hoy = views.CalendarioLiturgicoViewSet.as_view({'get': 'hoy'})
 _horarios_list = views.MisaHorarioViewSet.as_view({'get': 'list'})
 
 urlpatterns = [
-    path('', include(router.urls)),
-
     # ---- Intenciones de oración ----
     path('intenciones/',
          views.IntencionOracionCreateView.as_view(),
@@ -55,4 +53,8 @@ urlpatterns = [
     # ---- Información parroquial y de oficina ----
     path('parroquia/info/', views.ParroquiaInfoView.as_view(), name='parroquia-info'),
     path('oficina/info/', views.OficinaInfoView.as_view(), name='oficina-info'),
+
+    # Keep explicit paths before the router: otherwise /calendario/refresh/
+    # can be interpreted as the router's /calendario/<pk>/ detail route.
+    path('', include(router.urls)),
 ]

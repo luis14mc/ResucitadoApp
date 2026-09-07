@@ -34,7 +34,10 @@ class OracionModel extends Oracion {
       contenido: json['contenido']?.toString(),
       orden: int.tryParse(json['orden']?.toString() ?? '') ?? 0,
       destacada: json['destacada'] == true || json['destacada'] == 1,
-      duracionEstimada: int.tryParse(json['duracion_estimada']?.toString() ?? json['duracionEstimada']?.toString() ?? '') ?? 5,
+      duracionEstimada: int.tryParse(json['duracion_estimada']?.toString() ??
+              json['duracionEstimada']?.toString() ??
+              '') ??
+          5,
       secciones: parsedSecciones,
     );
   }

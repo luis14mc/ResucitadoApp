@@ -45,7 +45,8 @@ class StandardFooter extends StatelessWidget {
               if (!isHome) ...[
                 TextButton.icon(
                   onPressed: () => context.go('/'),
-                  icon: const Icon(Icons.home_rounded, color: Colors.white, size: 20),
+                  icon: const Icon(Icons.home_rounded,
+                      color: Colors.white, size: 20),
                   label: Text(
                     'VOLVER AL INICIO',
                     style: AppTheme.caption.copyWith(
@@ -56,9 +57,11 @@ class StandardFooter extends StatelessWidget {
                   ),
                   style: TextButton.styleFrom(
                     backgroundColor: const Color.fromRGBO(255, 255, 255, 0.1),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
                     ),
                   ),
                 ),

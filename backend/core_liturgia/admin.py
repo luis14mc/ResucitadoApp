@@ -11,6 +11,7 @@ from .models import (
     IntencionOracion,
     Santo,
     Evento,
+    EventoInscripcion,
     ParroquiaInfo,
     OficinaInfo,
     Oracion,
@@ -123,6 +124,17 @@ class EventoAdmin(admin.ModelAdmin):
     search_fields = ('titulo', 'descripcion', 'lugar')
 
 
+@admin.register(EventoInscripcion)
+class EventoInscripcionAdmin(admin.ModelAdmin):
+    list_display = ('evento', 'participante_id', 'nombre', 'email', 'activa', 'creado_en')
+    list_filter = ('activa', 'evento')
+    search_fields = ('participante_id', 'nombre', 'email', 'telefono', 'idempotency_key')
+    readonly_fields = (
+        'participante_id', 'idempotency_key', 'ip_origen', 'datos',
+        'creado_en', 'actualizado_en',
+    )
+
+
 @admin.register(ParroquiaInfo)
 class ParroquiaInfoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'telefono', 'email', 'actualizado_en')
@@ -147,4 +159,3 @@ class OracionAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('titulo',)}
     list_editable = ('activo', 'destacada', 'orden')
     inlines = [OracionSeccionInline]
-

@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../models/emision_model.dart';
 
@@ -35,6 +36,7 @@ class EmisionesRemoteDataSourceImpl implements EmisionesRemoteDataSource {
     if (data is Map) {
       if (data.containsKey('results')) return _extractList(data['results']);
       if (data.containsKey('data')) return _extractList(data['data']);
+      if (data.containsKey('items')) return _extractList(data['items']);
     }
     return const [];
   }
@@ -43,12 +45,12 @@ class EmisionesRemoteDataSourceImpl implements EmisionesRemoteDataSource {
   Future<List<EmisionModel>> getEmisionesActivas() async {
     try {
       print('GET: /emisiones');
-      final response = await dioClient.get('/emisiones');
+      final response = await dioClient.get(ApiConstants.emisiones);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EmisionModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEmisionesActivas: $e\n$stack');
@@ -58,37 +60,23 @@ class EmisionesRemoteDataSourceImpl implements EmisionesRemoteDataSource {
 
   @override
   Future<List<EmisionModel>> getEmisionesPorCategoria(String categoria) async {
-    try {
-      print('GET: /emisiones/categoria/$categoria');
-      final response = await dioClient.get('/emisiones/categoria/$categoria');
-      print('RESPONSE STATUS: ${response.statusCode}');
-      
-      final rawData = response.data;
-      final list = _extractList(rawData);
-      
-      return list.map((json) => EmisionModel.fromJson(json)).toList();
-    } catch (e, stack) {
-      print('WARNING/ERROR in getEmisionesPorCategoria: $e. Falling back to client-side filter.');
-      try {
-        final all = await getEmisionesActivas();
-        return all.where((item) => item.categoria.toLowerCase() == categoria.toLowerCase()).toList();
-      } catch (fallbackErr) {
-        print('FALLBACK FAILED: $fallbackErr');
-        throw ServerException('Error al obtener emisiones por categoría: $e');
-      }
-    }
+    final all = await getEmisionesActivas();
+    return all
+        .where(
+            (item) => item.categoria.toLowerCase() == categoria.toLowerCase())
+        .toList();
   }
 
   @override
   Future<List<EmisionModel>> getEmisionesEnVivo() async {
     try {
       print('GET: /emisiones/en-vivo');
-      final response = await dioClient.get('/emisiones/en-vivo');
+      final response = await dioClient.get(ApiConstants.emisionesEnVivo);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EmisionModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEmisionesEnVivo: $e\n$stack');
@@ -100,12 +88,12 @@ class EmisionesRemoteDataSourceImpl implements EmisionesRemoteDataSource {
   Future<EmisionModel> getEmisionPorId(String id) async {
     try {
       print('GET: /emisiones/$id');
-      final response = await dioClient.get('/emisiones/$id');
+      final response = await dioClient.get('\${ApiConstants.emisiones}$id/');
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return EmisionModel.fromJson(extracted);
     } catch (e, stack) {
       print('ERROR IN getEmisionPorId: $e\n$stack');

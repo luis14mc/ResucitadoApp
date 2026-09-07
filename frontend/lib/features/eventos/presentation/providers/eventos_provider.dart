@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/state/data_state.dart';
 import '../../domain/entities/evento.dart';
 import '../../domain/usecases/get_eventos_activos.dart';
+import '../../domain/repositories/eventos_repository.dart';
 import '../../../../injection.dart';
 
 /// Provider para los eventos activos
@@ -39,6 +40,7 @@ class EventosNotifier extends StateNotifier<DataState<List<Evento>>> {
   }
 
   final GetEventosActivos _getEventosActivos = getIt<GetEventosActivos>();
+  final EventosRepository _eventosRepository = getIt<EventosRepository>();
 
   /// Carga los eventos activos
   Future<void> loadEventos() async {
@@ -55,5 +57,17 @@ class EventosNotifier extends StateNotifier<DataState<List<Evento>>> {
   /// Recarga los eventos
   Future<void> reload() async {
     await loadEventos();
+  }
+
+  /// Envía una inscripción pública y devuelve un mensaje solo si falla.
+  Future<String?> inscribir(
+    String eventoId,
+    Map<String, dynamic> datosParticipante,
+  ) async {
+    final result = await _eventosRepository.inscribirseEvento(
+      eventoId,
+      datosParticipante,
+    );
+    return result.fold((failure) => failure.message, (_) => null);
   }
 }

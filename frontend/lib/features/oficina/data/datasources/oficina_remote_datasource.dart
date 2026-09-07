@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../models/oficina_info_model.dart';
 
@@ -30,12 +31,12 @@ class OficinaRemoteDataSourceImpl implements OficinaRemoteDataSource {
   Future<OficinaInfoModel> getOficinaInfo() async {
     try {
       print('GET: /oficina/info');
-      final response = await dioClient.get('/oficina/info');
+      final response = await dioClient.get(ApiConstants.oficinaInfo);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return OficinaInfoModel.fromJson(extracted);
     } catch (e, stack) {
       print('ERROR IN getOficinaInfo: $e\n$stack');

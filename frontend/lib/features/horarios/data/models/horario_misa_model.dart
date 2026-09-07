@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/horario_misa.dart';
+import '../../../../core/utils/json_utils.dart';
 
 part 'horario_misa_model.g.dart';
 
@@ -39,16 +40,25 @@ class HorarioMisaModel extends HorarioMisa {
     final diaStr = (json['dia'] ?? '').toString().toLowerCase();
     DiaSemana? diaEnum;
     if (diaStr.isNotEmpty) {
-      if (diaStr.contains('lun')) diaEnum = DiaSemana.lunes;
-      else if (diaStr.contains('mar')) diaEnum = DiaSemana.martes;
-      else if (diaStr.contains('mie') || diaStr.contains('mié')) diaEnum = DiaSemana.miercoles;
-      else if (diaStr.contains('jue')) diaEnum = DiaSemana.jueves;
-      else if (diaStr.contains('vie')) diaEnum = DiaSemana.viernes;
-      else if (diaStr.contains('sab') || diaStr.contains('sáb')) diaEnum = DiaSemana.sabado;
-      else if (diaStr.contains('dom')) diaEnum = DiaSemana.domingo;
+      if (diaStr.contains('lun'))
+        diaEnum = DiaSemana.lunes;
+      else if (diaStr.contains('mar'))
+        diaEnum = DiaSemana.martes;
+      else if (diaStr.contains('mie') || diaStr.contains('mié'))
+        diaEnum = DiaSemana.miercoles;
+      else if (diaStr.contains('jue'))
+        diaEnum = DiaSemana.jueves;
+      else if (diaStr.contains('vie'))
+        diaEnum = DiaSemana.viernes;
+      else if (diaStr.contains('sab') || diaStr.contains('sáb'))
+        diaEnum = DiaSemana.sabado;
+      else if (diaStr.contains('dom'))
+        diaEnum = DiaSemana.domingo;
       else {
         diaEnum = DiaSemana.values.firstWhere(
-          (e) => e.name.toLowerCase() == diaStr || e.displayName.toLowerCase() == diaStr,
+          (e) =>
+              e.name.toLowerCase() == diaStr ||
+              e.displayName.toLowerCase() == diaStr,
           orElse: () => DiaSemana.lunes,
         );
       }
@@ -60,11 +70,14 @@ class HorarioMisaModel extends HorarioMisa {
       dia: diaEnum,
       hora: (json['hora'] ?? '').toString(),
       lugar: (json['lugar'] ?? '').toString(),
-      sacerdote: json['sacerdote']?.toString() ?? json['celebrante']?.toString(),
+      sacerdote:
+          json['sacerdote']?.toString() ?? json['celebrante']?.toString(),
       descripcion: json['descripcion']?.toString() ?? json['notas']?.toString(),
-      activo: json['activo'] is bool ? json['activo'] as bool : true,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now() : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now() : DateTime.now(),
+      activo: JsonUtils.boolean(json, ['activo'], fallback: true),
+      createdAt:
+          JsonUtils.date(json, ['createdAt', 'created_at']) ?? DateTime.now(),
+      updatedAt:
+          JsonUtils.date(json, ['updatedAt', 'updated_at']) ?? DateTime.now(),
     );
   }
 

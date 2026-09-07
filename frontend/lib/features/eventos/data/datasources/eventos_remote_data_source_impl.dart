@@ -30,6 +30,7 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
     if (data is Map) {
       if (data.containsKey('results')) return _extractList(data['results']);
       if (data.containsKey('data')) return _extractList(data['data']);
+      if (data.containsKey('items')) return _extractList(data['items']);
     }
     return const [];
   }
@@ -40,10 +41,10 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
       print('GET: ${ApiConstants.eventosActivos}');
       final response = await dioClient.get(ApiConstants.eventosActivos);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEventosActivos: $e\n$stack');
@@ -54,14 +55,14 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
   @override
   Future<List<Evento>> getEventosPorCategoria(EventoCategoria categoria) async {
     try {
-      final path = '${ApiConstants.eventosPorCategoria}/${categoria.name}';
+      final path = '${ApiConstants.eventosPorCategoria}${categoria.name}/';
       print('GET: $path');
       final response = await dioClient.get(path);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEventosPorCategoria: $e\n$stack');
@@ -75,14 +76,14 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
       final dateStr = fecha.toIso8601String();
       print('GET: ${ApiConstants.eventos}/fecha with query fecha=$dateStr');
       final response = await dioClient.get(
-        '${ApiConstants.eventos}/fecha',
+        '${ApiConstants.eventos}fecha/',
         queryParameters: {'fecha': dateStr},
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEventosPorFecha: $e\n$stack');
@@ -96,19 +97,20 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
     try {
       final iniStr = inicio.toIso8601String();
       final finStr = fin.toIso8601String();
-      print('GET: ${ApiConstants.eventos}/rango with query inicio=$iniStr, fin=$finStr');
+      print(
+          'GET: ${ApiConstants.eventos}/rango with query inicio=$iniStr, fin=$finStr');
       final response = await dioClient.get(
-        '${ApiConstants.eventos}/rango',
+        '${ApiConstants.eventos}rango/',
         queryParameters: {
           'inicio': iniStr,
           'fin': finStr,
         },
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getEventosEntreFechas: $e\n$stack');
@@ -119,14 +121,14 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
   @override
   Future<Evento> getEventoPorId(String id) async {
     try {
-      final path = '${ApiConstants.eventos}/$id';
+      final path = '${ApiConstants.eventos}$id/';
       print('GET: $path');
       final response = await dioClient.get(path);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return EventoModel.fromJson(extracted);
     } catch (e, stack) {
       print('ERROR IN getEventoPorId: $e\n$stack');
@@ -139,14 +141,14 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
     try {
       print('GET: ${ApiConstants.eventos}/buscar with query q=$query');
       final response = await dioClient.get(
-        '${ApiConstants.eventos}/buscar',
+        '${ApiConstants.eventos}buscar/',
         queryParameters: {'q': query},
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN buscarEventos: $e\n$stack');
@@ -158,7 +160,7 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
   Future<void> inscribirseEvento(
       String eventoId, Map<String, dynamic> datosParticipante) async {
     try {
-      final path = '${ApiConstants.eventos}/$eventoId/inscripcion';
+      final path = '${ApiConstants.eventos}$eventoId/inscripcion/';
       print('POST: $path with payload: $datosParticipante');
       final response = await dioClient.post(path, data: datosParticipante);
       print('RESPONSE STATUS: ${response.statusCode}');
@@ -172,7 +174,8 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
   Future<void> cancelarInscripcion(
       String eventoId, String participanteId) async {
     try {
-      final path = '${ApiConstants.eventos}/$eventoId/inscripcion/$participanteId';
+      final path =
+          '${ApiConstants.eventos}$eventoId/inscripcion/$participanteId/';
       print('DELETE: $path');
       final response = await dioClient.delete(path);
       print('RESPONSE STATUS: ${response.statusCode}');
@@ -194,10 +197,10 @@ class EventosRemoteDataSourceImpl implements EventosRemoteDataSource {
         },
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => EventoModel.fromJson(json)).toList();
     } catch (e, stack) {
       print('ERROR IN getTodosEventos: $e\n$stack');

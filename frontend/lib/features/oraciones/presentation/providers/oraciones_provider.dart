@@ -6,12 +6,13 @@ import '../../domain/usecases/get_oraciones_por_categoria.dart';
 import '../../../../injection.dart';
 
 /// Provider for featured prayers
-final oracionesDestacadasProvider =
-    StateNotifierProvider<OracionesDestacadasNotifier, DataState<List<Oracion>>>((ref) {
+final oracionesDestacadasProvider = StateNotifierProvider<
+    OracionesDestacadasNotifier, DataState<List<Oracion>>>((ref) {
   return OracionesDestacadasNotifier();
 });
 
-class OracionesDestacadasNotifier extends StateNotifier<DataState<List<Oracion>>> {
+class OracionesDestacadasNotifier
+    extends StateNotifier<DataState<List<Oracion>>> {
   OracionesDestacadasNotifier() : super(const DataStateInitial()) {
     loadDestacadas();
   }
@@ -30,18 +31,22 @@ class OracionesDestacadasNotifier extends StateNotifier<DataState<List<Oracion>>
 
 /// Provider for prayers by category
 final oracionesCategoriaProvider = StateNotifierProvider.family<
-    OracionesCategoriaNotifier, DataState<List<Oracion>>, String>((ref, categoria) {
+    OracionesCategoriaNotifier,
+    DataState<List<Oracion>>,
+    String>((ref, categoria) {
   return OracionesCategoriaNotifier(categoria);
 });
 
-class OracionesCategoriaNotifier extends StateNotifier<DataState<List<Oracion>>> {
+class OracionesCategoriaNotifier
+    extends StateNotifier<DataState<List<Oracion>>> {
   final String categoria;
 
   OracionesCategoriaNotifier(this.categoria) : super(const DataStateInitial()) {
     loadPorCategoria();
   }
 
-  final GetOracionesPorCategoria _getPorCategoria = getIt<GetOracionesPorCategoria>();
+  final GetOracionesPorCategoria _getPorCategoria =
+      getIt<GetOracionesPorCategoria>();
 
   Future<void> loadPorCategoria() async {
     state = const DataStateLoading();

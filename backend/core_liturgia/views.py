@@ -8,17 +8,24 @@ Filosofía:
   por IP y validación anti-abuso.
 """
 from datetime import date
+import logging
+import ipaddress
+import uuid
+
+from django.conf import settings
 from django.utils import timezone
-from django.db.models import Q
+from django.db import IntegrityError, transaction
+from django.db.models import F, Q
 from rest_framework import viewsets, mixins, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.throttling import ScopedRateThrottle
 
 from .models import (
     CalendarioLiturgico, MisaHorario, VideoMisa, IntencionOracion,
     EstadoEmision, Santo, Evento, ParroquiaInfo, OficinaInfo,
-    Oracion,
+    Oracion, EventoInscripcion,
 )
 from .serializers import (
     CalendarioLiturgicoSerializer,
@@ -34,6 +41,9 @@ from .serializers import (
     OracionDetalleSerializer,
 )
 from .services.lecturas_proxy import LecturasProxyService
+from .permissions import ServiceTokenPermission
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -56,8 +66,15 @@ class EmptyDictView(APIView):
 
 
 def _client_ip(request):
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
-    return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')
+    if getattr(settings, 'TRUST_PROXY_HEADERS', False):
+        xff = request.META.get('HTTP_X_FORWARDED_FOR')
+        candidate = xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')
+    else:
+        candidate = request.META.get('REMOTE_ADDR')
+    try:
+        return str(ipaddress.ip_address(candidate)) if candidate else None
+    except ValueError:
+        return None
 
 
 # ============================================================
@@ -147,9 +164,13 @@ class IntencionOracionCreateView(generics.CreateAPIView):
     """POST /api/v1/intenciones/  — abierto sin login."""
     queryset = IntencionOracion.objects.all()
     serializer_class = IntencionOracionCreateSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'intenciones'
 
     def perform_create(self, serializer):
         serializer.save(
+            # Public callers may submit a petition, never publish or approve it.
+            es_publica=False,
             ip_origen=_client_ip(self.request),
             user_agent=self.request.META.get('HTTP_USER_AGENT', '')[:255],
         )
@@ -174,10 +195,20 @@ class LecturasRefreshView(APIView):
     """
     POST /api/v1/calendario/refresh/?days=7
     Refresca la caché de lecturas para los próximos N días.
-    En producción: protégelo con un token, por ahora abierto.
+    Requiere X-Internal-Token/Authorization: Bearer o una sesión staff.
     """
+    permission_classes = [ServiceTokenPermission]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'refresh'
+
     def post(self, request):
-        days = int(request.query_params.get('days', 1))
+        try:
+            days = int(request.query_params.get('days', 1))
+        except (TypeError, ValueError):
+            return Response(
+                {'detail': 'days debe ser un entero entre 1 y 14.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         days = max(1, min(days, 14))
         result = LecturasProxyService().refresh_range(days_ahead=days)
         return Response(result)
@@ -206,7 +237,18 @@ class SantoViewSet(viewsets.ReadOnlyModelViewSet):
         if not mes:
             mes = timezone.localdate().month
         else:
-            mes = int(mes)
+            try:
+                mes = int(mes)
+            except (TypeError, ValueError):
+                return Response(
+                    {'detail': 'mes debe ser un entero entre 1 y 12.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if not 1 <= mes <= 12:
+            return Response(
+                {'detail': 'mes debe estar entre 1 y 12.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         qs = self.queryset.filter(fecha_celebracion__month=mes)
         return Response(self.get_serializer(qs, many=True).data)
 
@@ -232,7 +274,13 @@ class EventoViewSet(viewsets.ReadOnlyModelViewSet):
     def por_fecha(self, request):
         f = request.query_params.get('fecha')
         if f:
-            d = date.fromisoformat(f.split('T')[0])
+            try:
+                d = date.fromisoformat(f.split('T')[0])
+            except ValueError:
+                return Response(
+                    {'detail': 'fecha debe usar el formato YYYY-MM-DD.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = self.queryset.filter(fecha=d)
         else:
             qs = self.queryset.none()
@@ -243,11 +291,25 @@ class EventoViewSet(viewsets.ReadOnlyModelViewSet):
         inicio = request.query_params.get('inicio')
         fin = request.query_params.get('fin')
         if inicio and fin:
-            d_ini = date.fromisoformat(inicio.split('T')[0])
-            d_fin = date.fromisoformat(fin.split('T')[0])
+            try:
+                d_ini = date.fromisoformat(inicio.split('T')[0])
+                d_fin = date.fromisoformat(fin.split('T')[0])
+            except ValueError:
+                return Response(
+                    {'detail': 'inicio y fin deben usar el formato YYYY-MM-DD.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if d_ini > d_fin:
+                return Response(
+                    {'detail': 'inicio no puede ser posterior a fin.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = self.queryset.filter(fecha__range=[d_ini, d_fin])
         else:
-            qs = self.queryset.none()
+            return Response(
+                {'detail': 'inicio y fin son obligatorios.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(self.get_serializer(qs, many=True).data)
 
     @action(detail=False, methods=['get'], url_path='buscar')
@@ -258,20 +320,124 @@ class EventoViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='inscripcion')
     def inscribirse(self, request, pk=None):
-        obj = self.get_object()
-        if obj.maximo_participantes is None or obj.participantes_actuales < obj.maximo_participantes:
-            obj.participantes_actuales += 1
-            obj.save()
-            return Response({'status': 'inscrito'})
-        return Response({'detail': 'Evento lleno.'}, status=status.HTTP_400_BAD_REQUEST)
+        """Create an idempotent public registration under a row lock."""
+        self.throttle_classes = [ScopedRateThrottle]
+        self.throttle_scope = 'inscripciones'
+        self.check_throttles(request)
+        payload = request.data if isinstance(request.data, dict) else {}
+        idempotency_key = (
+            request.headers.get('Idempotency-Key')
+            or payload.get('idempotency_key')
+            or payload.get('idempotencyKey')
+            or ''
+        ).strip()
+        if len(idempotency_key) > 128:
+            return Response(
+                {'detail': 'Idempotency-Key no puede superar 128 caracteres.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        def text_value(*keys, limit):
+            for key in keys:
+                value = payload.get(key)
+                if value is not None:
+                    return str(value).strip()[:limit]
+            return ''
+
+        registration_data = {
+            'nombre': text_value('nombre', 'name', limit=120),
+            'email': text_value('email', 'correo', limit=254),
+            'telefono': text_value('telefono', 'phone', limit=30),
+            'notas': text_value('notas', 'notes', 'comentario', limit=500),
+        }
+        if registration_data['email'] and '@' not in registration_data['email']:
+            return Response({'detail': 'El email no tiene un formato válido.'}, status=400)
+
+        try:
+            with transaction.atomic():
+                evento = Evento.objects.select_for_update().get(pk=pk, activo=True)
+                if idempotency_key:
+                    existing = EventoInscripcion.objects.filter(
+                        evento=evento, idempotency_key=idempotency_key,
+                    ).first()
+                    if existing:
+                        return Response({
+                            'status': 'inscrito',
+                            'idempotente': True,
+                            'inscripcion_id': str(existing.participante_id),
+                            'participantes_actuales': evento.participantes_actuales,
+                        })
+                if evento.maximo_participantes is not None and (
+                    evento.participantes_actuales >= evento.maximo_participantes
+                ):
+                    return Response({'detail': 'Evento lleno.'}, status=status.HTTP_409_CONFLICT)
+                registration = EventoInscripcion.objects.create(
+                    evento=evento,
+                    idempotency_key=idempotency_key,
+                    datos={key: value for key, value in registration_data.items() if value},
+                    ip_origen=_client_ip(request),
+                    **registration_data,
+                )
+                Evento.objects.filter(pk=evento.pk).update(
+                    participantes_actuales=F('participantes_actuales') + 1,
+                )
+                evento.refresh_from_db(fields=['participantes_actuales'])
+        except Evento.DoesNotExist:
+            return Response({'detail': 'Evento no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        except IntegrityError:
+            # A concurrent retry with the same key lost the race; return the
+            # committed registration rather than incrementing the counter again.
+            existing = EventoInscripcion.objects.filter(
+                evento_id=pk, idempotency_key=idempotency_key,
+            ).first()
+            if existing:
+                return Response({
+                    'status': 'inscrito', 'idempotente': True,
+                    'inscripcion_id': str(existing.participante_id),
+                })
+            logger.exception('Registration integrity error for event %s', pk)
+            return Response({'detail': 'No fue posible completar la inscripción.'}, status=409)
+
+        return Response({
+            'status': 'inscrito',
+            'idempotente': False,
+            'inscripcion_id': str(registration.participante_id),
+            'participantes_actuales': evento.participantes_actuales,
+        }, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['delete'], url_path=r'inscripcion/(?P<part_id>[^/]+)')
     def cancelar_inscripcion(self, request, pk=None, part_id=None):
-        obj = self.get_object()
-        if obj.participantes_actuales > 0:
-            obj.participantes_actuales -= 1
-            obj.save()
-        return Response({'status': 'cancelado'})
+        try:
+            participant_uuid = uuid.UUID(str(part_id))
+        except (TypeError, ValueError, AttributeError):
+            return Response(
+                {'detail': 'El identificador de inscripción no es válido.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            with transaction.atomic():
+                evento = Evento.objects.select_for_update().get(pk=pk, activo=True)
+                registration = EventoInscripcion.objects.filter(
+                    evento=evento, participante_id=participant_uuid, activa=True,
+                ).first()
+                if not registration:
+                    return Response(
+                        {'detail': 'Inscripción no encontrada o ya cancelada.'},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                registration.activa = False
+                registration.save(update_fields=['activa', 'actualizado_en'])
+                Evento.objects.filter(pk=evento.pk, participantes_actuales__gt=0).update(
+                    participantes_actuales=F('participantes_actuales') - 1,
+                )
+                evento.refresh_from_db(fields=['participantes_actuales'])
+        except Evento.DoesNotExist:
+            return Response({'detail': 'Evento no encontrado.'}, status=404)
+        return Response({
+            'status': 'cancelado',
+            'inscripcion_id': str(registration.participante_id),
+            'participantes_actuales': evento.participantes_actuales,
+        })
 
 
 # ============================================================
@@ -317,4 +483,3 @@ class OracionViewSet(viewsets.ReadOnlyModelViewSet):
         """GET /api/v1/oraciones/categoria/<categoria>/ -> lists active prayers in a category"""
         qs = self.queryset.filter(categoria=categoria.lower()).order_by('orden', 'titulo')
         return Response(self.get_serializer(qs, many=True).data)
-

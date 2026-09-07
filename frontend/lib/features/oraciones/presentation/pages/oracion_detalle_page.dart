@@ -31,7 +31,9 @@ class OracionDetallePage extends ConsumerWidget {
       body: () {
         switch (detailState) {
           case DataStateInitial() || DataStateLoading():
-            return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+            return const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primaryColor));
           case DataStateError(message: final errorMsg):
             return Center(
               child: Padding(
@@ -39,21 +41,26 @@ class OracionDetallePage extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 60, color: AppColors.primaryRed),
+                    const Icon(Icons.error_outline,
+                        size: 60, color: AppColors.primaryRed),
                     const SizedBox(height: AppTheme.spacingM),
                     Text(
                       'Error al cargar la oración.',
-                      style: AppTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTheme.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: AppTheme.spacingS),
                     Text(
                       errorMsg,
                       textAlign: TextAlign.center,
-                      style: AppTheme.bodyMedium.copyWith(color: AppColors.mediumGray),
+                      style: AppTheme.bodyMedium
+                          .copyWith(color: AppColors.mediumGray),
                     ),
                     const SizedBox(height: AppTheme.spacingL),
                     ElevatedButton(
-                      onPressed: () => ref.read(oracionDetalleProvider(slug).notifier).loadDetalle(),
+                      onPressed: () => ref
+                          .read(oracionDetalleProvider(slug).notifier)
+                          .loadDetalle(),
                       child: const Text('Reintentar'),
                     ),
                   ],
@@ -87,7 +94,8 @@ class OracionDetallePage extends ConsumerWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.parishGold.withAlpha(38),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),

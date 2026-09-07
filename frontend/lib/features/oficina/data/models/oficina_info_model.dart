@@ -19,7 +19,9 @@ class OficinaInfoModel extends OficinaInfo {
 
   factory OficinaInfoModel.fromJson(Map<String, dynamic> json) {
     // 1. Resolve direccion from 'ubicacion' or 'direccion'
-    final String dirStr = json['ubicacion']?.toString() ?? json['direccion']?.toString() ?? 'Oficina Parroquial';
+    final String dirStr = json['ubicacion']?.toString() ??
+        json['direccion']?.toString() ??
+        'Oficina Parroquial';
 
     // 2. Resolve telefono and email from 'contacto' or root
     String telStr = '';
@@ -40,7 +42,8 @@ class OficinaInfoModel extends OficinaInfo {
       for (final item in horarioAtencionVal) {
         if (item is Map) {
           final dia = (item['dia'] ?? '').toString();
-          final ap = (item['horaApertura'] ?? item['apertura'] ?? '').toString();
+          final ap =
+              (item['horaApertura'] ?? item['apertura'] ?? '').toString();
           final cier = (item['horaCierre'] ?? item['cierre'] ?? '').toString();
           if (dia.isNotEmpty) {
             parsedHorarios[dia] = '$ap - $cier';
@@ -54,7 +57,8 @@ class OficinaInfoModel extends OficinaInfo {
     }
 
     if (parsedHorarios.isEmpty) {
-      parsedHorarios['Lunes a Viernes'] = '08:00 AM - 12:00 PM, 02:00 PM - 05:00 PM';
+      parsedHorarios['Lunes a Viernes'] =
+          '08:00 AM - 12:00 PM, 02:00 PM - 05:00 PM';
       parsedHorarios['Sábados'] = '08:00 AM - 12:00 PM';
     }
 
@@ -75,7 +79,8 @@ class OficinaInfoModel extends OficinaInfo {
     }
 
     if (parsedServicios.isEmpty) {
-      parsedServicios.addAll(['Bautismos', 'Matrimonios', 'Confesiones', 'Intenciones de Misa']);
+      parsedServicios.addAll(
+          ['Bautismos', 'Matrimonios', 'Confesiones', 'Intenciones de Misa']);
     }
 
     // 5. Parse coordinates
@@ -83,11 +88,16 @@ class OficinaInfoModel extends OficinaInfo {
     double? lng;
     final coordVal = json['coordenadas'];
     if (coordVal is Map) {
-      lat = double.tryParse(coordVal['latitud']?.toString() ?? coordVal['lat']?.toString() ?? '');
-      lng = double.tryParse(coordVal['longitud']?.toString() ?? coordVal['lng']?.toString() ?? '');
+      lat = double.tryParse(
+          coordVal['latitud']?.toString() ?? coordVal['lat']?.toString() ?? '');
+      lng = double.tryParse(coordVal['longitud']?.toString() ??
+          coordVal['lng']?.toString() ??
+          '');
     } else {
-      lat = double.tryParse(json['latitud']?.toString() ?? json['lat']?.toString() ?? '');
-      lng = double.tryParse(json['longitud']?.toString() ?? json['lng']?.toString() ?? '');
+      lat = double.tryParse(
+          json['latitud']?.toString() ?? json['lat']?.toString() ?? '');
+      lng = double.tryParse(
+          json['longitud']?.toString() ?? json['lng']?.toString() ?? '');
     }
 
     // Safely parse DateTime (handling ISO8601 variations and -HHMM offsets)
@@ -103,7 +113,8 @@ class OficinaInfoModel extends OficinaInfo {
         if (sign == '+' || sign == '-') {
           final hours = str.substring(offsetStart + 1, offsetStart + 3);
           final minutes = str.substring(offsetStart + 3);
-          final cleanStr = str.substring(0, offsetStart) + sign + hours + ':' + minutes;
+          final cleanStr =
+              str.substring(0, offsetStart) + sign + hours + ':' + minutes;
           final cleanParsed = DateTime.tryParse(cleanStr);
           if (cleanParsed != null) return cleanParsed;
         }
@@ -120,7 +131,10 @@ class OficinaInfoModel extends OficinaInfo {
       servicios: parsedServicios,
       latitud: lat ?? 14.0435,
       longitud: lng ?? -87.2186,
-      actualizadoEn: parseDateTime(json['actualizado_en'] ?? json['actualizadoEn'] ?? json['updatedAt'] ?? json['createdAt']),
+      actualizadoEn: parseDateTime(json['actualizado_en'] ??
+          json['actualizadoEn'] ??
+          json['updatedAt'] ??
+          json['createdAt']),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/santo.dart';
+import '../../../../core/utils/json_utils.dart';
 
 part 'santo_model.g.dart';
 
@@ -32,7 +33,9 @@ class SantoModel extends Santo {
     }
 
     // 2. Parse fechaCelebracion (handling MM-DD or DateTime)
-    final String fcStr = (json['fechaCelebracion'] ?? '').toString();
+    final String fcStr =
+        (json['fechaCelebracion'] ?? json['fecha_celebracion'] ?? '')
+            .toString();
     DateTime parsedDate = DateTime.now();
     if (fcStr.isNotEmpty) {
       if (fcStr.length == 5 && fcStr.contains('-')) {
@@ -68,10 +71,13 @@ class SantoModel extends Santo {
       festividad: (json['festividad'] ?? '').toString(),
       patrono: patronoStr,
       oracion: (json['oracion'] ?? '').toString(),
-      imagenUrl: json['imagenUrl']?.toString() ?? json['imagen_url']?.toString(),
+      imagenUrl:
+          json['imagenUrl']?.toString() ?? json['imagen_url']?.toString(),
       atributos: parsedAtributos,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now() : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now() : DateTime.now(),
+      createdAt:
+          JsonUtils.date(json, ['createdAt', 'created_at']) ?? DateTime.now(),
+      updatedAt:
+          JsonUtils.date(json, ['updatedAt', 'updated_at']) ?? DateTime.now(),
     );
   }
 

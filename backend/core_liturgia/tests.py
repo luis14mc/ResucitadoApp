@@ -1,6 +1,8 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 from django.urls import reverse
 from django.utils import timezone
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -17,6 +19,8 @@ from .models import (
     ColorLiturgico,
     TipoCelebracion,
     EstadoEmision,
+    CalendarioLiturgico,
+    IntencionOracion,
 )
 
 
@@ -186,11 +190,72 @@ class CoreLiturgiaAPITests(APITestCase):
 
     def test_inscripcion_evento(self):
         url = reverse('eventos-inscribirse', kwargs={'pk': self.evento.pk})
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(url, {'nombre': 'Fiel Test'}, format='json', HTTP_IDEMPOTENCY_KEY='test-1')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], 'inscrito')
+        self.assertFalse(response.data['idempotente'])
+        registration_id = response.data['inscripcion_id']
         self.evento.refresh_from_db()
         self.assertEqual(self.evento.participantes_actuales, 6)
+
+        retry = self.client.post(url, {'nombre': 'Fiel Test'}, format='json', HTTP_IDEMPOTENCY_KEY='test-1')
+        self.assertEqual(retry.status_code, status.HTTP_200_OK)
+        self.assertTrue(retry.data['idempotente'])
+        self.evento.refresh_from_db()
+        self.assertEqual(self.evento.participantes_actuales, 6)
+
+        cancel_url = reverse(
+            'eventos-cancelar-inscripcion',
+            kwargs={'pk': self.evento.pk, 'part_id': registration_id},
+        )
+        cancelled = self.client.delete(cancel_url)
+        self.assertEqual(cancelled.status_code, status.HTTP_200_OK)
+        self.evento.refresh_from_db()
+        self.assertEqual(self.evento.participantes_actuales, 5)
+
+    def test_contract_includes_flutter_lecture_shape(self):
+        CalendarioLiturgico.objects.create(
+            fecha=self.today,
+            titulo='Domingo de prueba',
+            tipo_celebracion='domingo',
+            color_liturgico=ColorLiturgico.VERDE,
+            primera_lectura_cita='Gn 1, 1-5',
+            primera_lectura_texto='Texto',
+            salmo_cita='Sal 1',
+            salmo_respuesta='Respuesta',
+            salmo_texto='Salmo',
+            evangelio_cita='Jn 1, 1-5',
+            evangelio_texto='Evangelio',
+        )
+        response = self.client.get(reverse('calendario-hoy'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('primeraLectura', response.data)
+        self.assertIn('evangelio', response.data)
+        self.assertEqual(response.data['salmo']['respuesta'], 'Respuesta')
+
+    def test_public_intention_cannot_self_publish(self):
+        response = self.client.post(
+            reverse('intenciones-create'),
+            {
+                'nombre': 'Fiel',
+                'intencion': 'Por mi familia',
+                'es_publica': True,
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(IntencionOracion.objects.get().es_publica)
+
+    @override_settings(LECTURAS_REFRESH_TOKEN='test-refresh-token')
+    def test_refresh_requires_service_token(self):
+        url = reverse('lecturas-refresh')
+        self.assertEqual(self.client.post(url).status_code, status.HTTP_403_FORBIDDEN)
+        with patch(
+            'core_liturgia.views.LecturasProxyService.refresh_range',
+            return_value={'refrescadas': [], 'fallidas': [], 'total': 0},
+        ):
+            response = self.client.post(url, HTTP_X_INTERNAL_TOKEN='test-refresh-token')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # ============================================================
     # Pruebas de Horarios y Emisiones

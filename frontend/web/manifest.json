@@ -1,11 +1,11 @@
 {
-    "name": "pcr_app",
-    "short_name": "pcr_app",
+    "name": "Parroquia Cristo Resucitado",
+    "short_name": "Cristo Resucitado",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#9E2E21",
+    "theme_color": "#9E2E21",
+    "description": "Vida parroquial, lecturas y celebraciones de la Parroquia Cristo Resucitado.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

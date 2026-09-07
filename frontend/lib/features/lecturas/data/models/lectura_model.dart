@@ -55,17 +55,34 @@ class LecturaModel extends Lectura {
       fecha: json['fecha'] != null
           ? DateTime.tryParse(json['fecha'].toString()) ?? DateTime.now()
           : DateTime.now(),
-      tiempoLiturgico: (json['tiempoLiturgico'] ?? json['tiempo_liturgico'] ?? '').toString(),
-      colorLiturgico: (json['colorLiturgico'] ?? json['color_liturgico'] ?? '').toString(),
-      primeraLectura: PrimeraLecturaModel.fromJson(parseSubJson(json['primeraLectura'] ?? json['primera_lectura'])),
+      tiempoLiturgico:
+          (json['tiempoLiturgico'] ?? json['tiempo_liturgico'] ?? '')
+              .toString(),
+      colorLiturgico:
+          (json['colorLiturgico'] ?? json['color_liturgico'] ?? '').toString(),
+      primeraLectura: PrimeraLecturaModel.fromJson(
+          parseSubJson(json['primeraLectura'] ?? json['primera_lectura'])),
       salmo: SalmoModel.fromJson(parseSubJson(json['salmo'])),
-      segundaLectura: (json['segundaLectura'] ?? json['segunda_lectura']) != null
-          ? SegundaLecturaModel.fromJson(parseSubJson(json['segundaLectura'] ?? json['segunda_lectura']))
+      segundaLectura: (json['segundaLectura'] ?? json['segunda_lectura']) !=
+              null
+          ? SegundaLecturaModel.fromJson(
+              parseSubJson(json['segundaLectura'] ?? json['segunda_lectura']))
           : null,
       evangelio: EvangelioModel.fromJson(parseSubJson(json['evangelio'])),
-      reflexion: (json['reflexion'] ?? json['reflexion_texto']) != null
-          ? ReflexionModel.fromJson(parseSubJson(json['reflexion'] ?? json['reflexion_texto']))
-          : null,
+      reflexion: () {
+        final raw = json['reflexion'] ?? json['reflexion_texto'];
+        if (raw is String && raw.trim().isNotEmpty) {
+          return ReflexionModel.fromJson({
+            'titulo': 'Reflexión',
+            'fuente': json['fuente'] ?? '',
+            'texto': raw,
+          });
+        }
+        if (raw is Map) {
+          return ReflexionModel.fromJson(parseSubJson(raw));
+        }
+        return null;
+      }(),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/emision.dart';
+import '../../../../core/utils/json_utils.dart';
 
 part 'emision_model.g.dart';
 
@@ -35,14 +36,21 @@ class EmisionModel extends Emision {
       descripcion: (json['descripcion'] ?? '').toString(),
       categoria: (json['categoria'] ?? '').toString(),
       duracion: durStr,
-      fecha: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
-      thumbnail: json['urlImagen']?.toString() ?? json['thumbnail']?.toString() ?? 'assets/images/placeholder.jpg',
-      enVivo: json['enVivo'] is bool ? json['enVivo'] as bool : false,
-      vistas: json['vistas'] is int ? json['vistas'] as int : 0,
-      videoUrl: json['urlStreaming']?.toString() ?? json['videoUrl']?.toString(),
-      youtubeId: json['youtubeId']?.toString(),
+      fecha:
+          JsonUtils.date(json, ['createdAt', 'created_at', 'fecha_evento']) ??
+              DateTime.now(),
+      thumbnail: JsonUtils.string(
+        json,
+        ['urlImagen', 'thumbnail', 'url_imagen'],
+        fallback: 'assets/images/Logo_PCR.png',
+      ),
+      enVivo: JsonUtils.boolean(json, ['enVivo', 'en_vivo']),
+      vistas: JsonUtils.integer(json, ['vistas']),
+      videoUrl: JsonUtils.string(
+          json, ['urlStreaming', 'videoUrl', 'url_streaming', 'video_url'],
+          fallback: ''),
+      youtubeId:
+          JsonUtils.string(json, ['youtubeId', 'youtube_id'], fallback: ''),
     );
   }
 

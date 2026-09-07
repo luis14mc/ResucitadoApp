@@ -148,11 +148,12 @@ Future<void> configureDependencies() async {
       () => EmisionesRemoteDataSourceImpl(getIt<DioClient>()));
   getIt.registerLazySingleton<EmisionesLocalDataSource>(
       () => EmisionesLocalDataSourceImpl(getIt<CacheManager>()));
-  getIt.registerLazySingleton<EmisionesRepository>(() => EmisionesRepositoryImpl(
-        remoteDataSource: getIt<EmisionesRemoteDataSource>(),
-        localDataSource: getIt<EmisionesLocalDataSource>(),
-        networkInfo: getIt<NetworkInfo>(),
-      ));
+  getIt
+      .registerLazySingleton<EmisionesRepository>(() => EmisionesRepositoryImpl(
+            remoteDataSource: getIt<EmisionesRemoteDataSource>(),
+            localDataSource: getIt<EmisionesLocalDataSource>(),
+            networkInfo: getIt<NetworkInfo>(),
+          ));
   getIt.registerLazySingleton<GetEmisionesActivas>(
       () => GetEmisionesActivas(getIt<EmisionesRepository>()));
   getIt.registerFactory<EmisionesNotifier>(
@@ -163,11 +164,12 @@ Future<void> configureDependencies() async {
       () => ParroquiaRemoteDataSourceImpl(getIt<DioClient>()));
   getIt.registerLazySingleton<ParroquiaLocalDataSource>(
       () => ParroquiaLocalDataSourceImpl(getIt<CacheManager>()));
-  getIt.registerLazySingleton<ParroquiaRepository>(() => ParroquiaRepositoryImpl(
-        remoteDataSource: getIt<ParroquiaRemoteDataSource>(),
-        localDataSource: getIt<ParroquiaLocalDataSource>(),
-        networkInfo: getIt<NetworkInfo>(),
-      ));
+  getIt
+      .registerLazySingleton<ParroquiaRepository>(() => ParroquiaRepositoryImpl(
+            remoteDataSource: getIt<ParroquiaRemoteDataSource>(),
+            localDataSource: getIt<ParroquiaLocalDataSource>(),
+            networkInfo: getIt<NetworkInfo>(),
+          ));
   getIt.registerLazySingleton<GetParroquiaInfo>(
       () => GetParroquiaInfo(getIt<ParroquiaRepository>()));
   getIt.registerFactory<ParroquiaNotifier>(
@@ -191,10 +193,11 @@ Future<void> configureDependencies() async {
   // ========== Oraciones Feature ==========
   getIt.registerLazySingleton<OracionesRemoteDataSource>(
       () => OracionesRemoteDataSourceImpl(getIt<DioClient>()));
-  getIt.registerLazySingleton<OracionesRepository>(() => OracionesRepositoryImpl(
-        remoteDataSource: getIt<OracionesRemoteDataSource>(),
-        networkInfo: getIt<NetworkInfo>(),
-      ));
+  getIt
+      .registerLazySingleton<OracionesRepository>(() => OracionesRepositoryImpl(
+            remoteDataSource: getIt<OracionesRemoteDataSource>(),
+            networkInfo: getIt<NetworkInfo>(),
+          ));
   getIt.registerLazySingleton<GetOraciones>(
       () => GetOraciones(getIt<OracionesRepository>()));
   getIt.registerLazySingleton<GetOracionesDestacadas>(

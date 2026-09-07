@@ -37,7 +37,9 @@ class ParroquiaInfoModel extends ParroquiaInfo {
       final colonia = dirVal['colonia'] ?? '';
       final ciudad = dirVal['ciudad'] ?? '';
       final pais = dirVal['pais'] ?? '';
-      dirStr = [calle, colonia, ciudad, pais].where((s) => s.toString().isNotEmpty).join(', ');
+      dirStr = [calle, colonia, ciudad, pais]
+          .where((s) => s.toString().isNotEmpty)
+          .join(', ');
     } else if (dirVal != null) {
       dirStr = dirVal.toString();
     }
@@ -55,7 +57,8 @@ class ParroquiaInfoModel extends ParroquiaInfo {
         if (sign == '+' || sign == '-') {
           final hours = str.substring(offsetStart + 1, offsetStart + 3);
           final minutes = str.substring(offsetStart + 3);
-          final cleanStr = str.substring(0, offsetStart) + sign + hours + ':' + minutes;
+          final cleanStr =
+              str.substring(0, offsetStart) + sign + hours + ':' + minutes;
           final cleanParsed = DateTime.tryParse(cleanStr);
           if (cleanParsed != null) return cleanParsed;
         }
@@ -70,11 +73,15 @@ class ParroquiaInfoModel extends ParroquiaInfo {
       mision: (json['mision'] ?? '').toString(),
       vision: (json['vision'] ?? '').toString(),
       valores: parseStringList(json['valores']),
-      imagenes: parseStringList(json['imagenes'] ?? json['urlImagenes'] ?? json['fotos']),
+      imagenes: parseStringList(
+          json['imagenes'] ?? json['urlImagenes'] ?? json['fotos']),
       direccion: dirStr,
       telefono: (json['telefono'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
-      actualizadoEn: parseDateTime(json['actualizado_en'] ?? json['actualizadoEn'] ?? json['updatedAt'] ?? json['createdAt']),
+      actualizadoEn: parseDateTime(json['actualizado_en'] ??
+          json['actualizadoEn'] ??
+          json['updatedAt'] ??
+          json['createdAt']),
     );
   }
 

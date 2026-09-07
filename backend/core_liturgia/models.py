@@ -8,7 +8,10 @@ Modelos centrales del backend:
 - VideoMisa            -> Emisiones de Facebook Live (transmisión y grabaciones)
 - IntencionOracion     -> Buzón abierto para que cualquier fiel envíe peticiones
 """
+import uuid
+
 from django.db import models
+from django.db.models import Q
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
@@ -356,9 +359,56 @@ class Evento(models.Model):
         verbose_name = 'Evento'
         verbose_name_plural = 'Eventos'
         ordering = ['fecha', 'hora']
+        constraints = [
+            models.CheckConstraint(
+                check=Q(participantes_actuales__gte=0),
+                name='evento_participantes_no_negativos',
+            ),
+        ]
 
     def __str__(self):
         return self.titulo
+
+
+class EventoInscripcion(models.Model):
+    """Public registration record used to make event writes idempotent.
+
+    The mobile app does not require an account, so the generated UUID is the
+    cancellation token returned to the caller.  The optional idempotency key
+    prevents retries from incrementing the event counter twice.
+    """
+
+    evento = models.ForeignKey(
+        Evento,
+        related_name='inscripciones',
+        on_delete=models.CASCADE,
+    )
+    participante_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    idempotency_key = models.CharField(max_length=128, blank=True)
+    nombre = models.CharField(max_length=120, blank=True)
+    email = models.EmailField(max_length=254, blank=True)
+    telefono = models.CharField(max_length=30, blank=True)
+    notas = models.CharField(max_length=500, blank=True)
+    datos = models.JSONField(default=dict, blank=True)
+    ip_origen = models.GenericIPAddressField(null=True, blank=True)
+    activa = models.BooleanField(default=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Inscripción a evento'
+        verbose_name_plural = 'Inscripciones a eventos'
+        ordering = ['-creado_en']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['evento', 'idempotency_key'],
+                condition=~Q(idempotency_key=''),
+                name='evento_idempotencia_unica',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.evento_id} · {self.participante_id}'
 
 
 # ============================================================
@@ -470,4 +520,3 @@ class OracionSeccion(models.Model):
 
     def __str__(self):
         return f'{self.oracion.titulo} - {self.titulo} ({self.orden})'
-

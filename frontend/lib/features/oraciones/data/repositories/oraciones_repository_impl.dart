@@ -5,7 +5,8 @@ import '../../domain/entities/oracion.dart';
 import '../../domain/repositories/oraciones_repository.dart';
 import '../datasources/oraciones_remote_datasource.dart';
 
-class OracionesRepositoryImpl extends RepositoryBase implements OracionesRepository {
+class OracionesRepositoryImpl extends RepositoryBase
+    implements OracionesRepository {
   final OracionesRemoteDataSource remoteDataSource;
 
   OracionesRepositoryImpl({
@@ -20,16 +21,20 @@ class OracionesRepositoryImpl extends RepositoryBase implements OracionesReposit
 
   @override
   Future<Either<Failure, List<Oracion>>> getOracionesDestacadas() async {
-    return executeWithErrorHandling(() => remoteDataSource.getOracionesDestacadas());
+    return executeWithErrorHandling(
+        () => remoteDataSource.getOracionesDestacadas());
   }
 
   @override
-  Future<Either<Failure, List<Oracion>>> getOracionesPorCategoria(String categoria) async {
-    return executeWithErrorHandling(() => remoteDataSource.getOracionesPorCategoria(categoria));
+  Future<Either<Failure, List<Oracion>>> getOracionesPorCategoria(
+      String categoria) async {
+    return executeWithErrorHandling(
+        () => remoteDataSource.getOracionesPorCategoria(categoria));
   }
 
   @override
   Future<Either<Failure, Oracion>> getOracionDetalle(String slug) async {
-    return executeWithErrorHandling(() => remoteDataSource.getOracionDetalle(slug));
+    return executeWithErrorHandling(
+        () => remoteDataSource.getOracionDetalle(slug));
   }
 }

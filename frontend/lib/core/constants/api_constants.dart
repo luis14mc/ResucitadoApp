@@ -15,8 +15,7 @@
 //   · iOS sim / Web / Win / macOS → localhost:8000
 //   · Override prod  →  --dart-define=API_BASE_URL=https://...
 // ============================================================
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 
 class ApiConstants {
   ApiConstants._();
@@ -32,9 +31,25 @@ class ApiConstants {
   static const String _apiPrefix = '/api/v1';
 
   static String get baseUrl {
-    if (_envBaseUrl.isNotEmpty) return _envBaseUrl;
-    if (kIsWeb) return 'http://127.0.0.1:$_devPort$_apiPrefix';
-    if (Platform.isAndroid) return 'http://10.0.2.2:$_devPort$_apiPrefix';
+    final configured = _envBaseUrl.trim();
+    if (configured.isNotEmpty) {
+      final withoutTrailingSlash = configured.replaceFirst(RegExp(r'/+$'), '');
+      return withoutTrailingSlash.endsWith(_apiPrefix)
+          ? withoutTrailingSlash
+          : '$withoutTrailingSlash$_apiPrefix';
+    }
+
+    // Web uses the same origin by default so a reverse proxy can expose the
+    // app and API without baking localhost into a production build.
+    if (kIsWeb) {
+      return Uri.base
+          .resolve('api/v1/')
+          .toString()
+          .replaceFirst(RegExp(r'/+$'), '');
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:$_devPort$_apiPrefix';
+    }
     return 'http://127.0.0.1:$_devPort$_apiPrefix';
   }
 

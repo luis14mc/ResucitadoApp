@@ -32,6 +32,7 @@ from typing import Optional, List
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
 from ..models import (
@@ -84,6 +85,7 @@ class BaseSource:
 
     def __init__(self, session: Optional[requests.Session] = None):
         self.session = session or requests.Session()
+        self.base_url = getattr(settings, 'LECTURAS_SOURCE_URL', self.base_url).rstrip('/')
         self.session.headers.update({
             'User-Agent': getattr(
                 settings, 'LECTURAS_USER_AGENT',
@@ -220,7 +222,11 @@ class LecturasProxyService:
         if not lecturas:
             if existing:
                 return existing
-            # Si no hay registro existente ni datos del servicio remoto, creamos un fallback
+            # Synthetic readings are useful only for local development.  Never
+            # publish fabricated liturgy in production.
+            if not getattr(settings, 'DEBUG', False):
+                logger.warning('No hay fuente de lecturas disponible para %s.', target)
+                return None
             logger.info('Falla de Ciudad Redonda detectada. Generando fallback local para %s.', target)
             lecturas = LecturasDelDia(
                 fecha=target,
@@ -240,10 +246,11 @@ class LecturasProxyService:
         defaults = lecturas.to_model_kwargs()
         defaults['importado_en'] = timezone.now()
 
-        obj, _ = CalendarioLiturgico.objects.update_or_create(
-            fecha=target,
-            defaults=defaults,
-        )
+        with transaction.atomic():
+            obj, _ = CalendarioLiturgico.objects.update_or_create(
+                fecha=target,
+                defaults=defaults,
+            )
         logger.info('Lecturas importadas para %s desde %s.',
                     target, lecturas.fuente)
         return obj

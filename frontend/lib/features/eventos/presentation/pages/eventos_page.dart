@@ -785,10 +785,12 @@ class _EventosPageState extends ConsumerState<EventosPage>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implementar inscripción o más información
-                            Navigator.pop(context);
-                          },
+                          onPressed: evento.requiereInscripcion
+                              ? () {
+                                  Navigator.pop(context);
+                                  _mostrarFormularioInscripcion(evento);
+                                }
+                              : () => Navigator.pop(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: categoriaColor,
                             foregroundColor: Colors.white,
@@ -800,7 +802,7 @@ class _EventosPageState extends ConsumerState<EventosPage>
                           child: Text(
                             evento.requiereInscripcion
                                 ? 'Inscribirse'
-                                : 'Más información',
+                                : 'Cerrar',
                             style: GoogleFonts.montserrat(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -861,6 +863,164 @@ class _EventosPageState extends ConsumerState<EventosPage>
         ),
       ],
     );
+  }
+
+  Future<void> _mostrarFormularioInscripcion(Evento evento) async {
+    final formKey = GlobalKey<FormState>();
+    final nombreController = TextEditingController();
+    final emailController = TextEditingController();
+    final telefonoController = TextEditingController();
+    final notasController = TextEditingController();
+
+    final registered = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        var loading = false;
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Inscribirse al evento'),
+            content: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      evento.titulo,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: nombreController,
+                      autofocus: true,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre completo',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (value) =>
+                          value == null || value.trim().length < 2
+                              ? 'Escribe tu nombre completo'
+                              : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electrónico',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                      validator: (value) {
+                        final email = value?.trim() ?? '';
+                        return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                                .hasMatch(email)
+                            ? null
+                            : 'Escribe un correo válido';
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: telefonoController,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Teléfono (opcional)',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: notasController,
+                      maxLines: 2,
+                      maxLength: 500,
+                      decoration: const InputDecoration(
+                        labelText: 'Comentario (opcional)',
+                        prefixIcon: Icon(Icons.notes_outlined),
+                      ),
+                    ),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        errorMessage!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: loading
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: loading
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+                        setState(() {
+                          loading = true;
+                          errorMessage = null;
+                        });
+                        final error =
+                            await ref.read(eventosProvider.notifier).inscribir(
+                          evento.id,
+                          {
+                            'nombre': nombreController.text.trim(),
+                            'email': emailController.text.trim(),
+                            'telefono': telefonoController.text.trim(),
+                            'notas': notasController.text.trim(),
+                            'idempotencyKey':
+                                '${evento.id}-${DateTime.now().microsecondsSinceEpoch}',
+                          },
+                        );
+                        if (!context.mounted) return;
+                        if (error != null) {
+                          setState(() {
+                            loading = false;
+                            errorMessage = error;
+                          });
+                        } else {
+                          Navigator.of(dialogContext).pop(true);
+                        }
+                      },
+                child: loading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Confirmar'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    nombreController.dispose();
+    emailController.dispose();
+    telefonoController.dispose();
+    notasController.dispose();
+
+    if (registered == true && mounted) {
+      ref.read(eventosProvider.notifier).reload();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inscripción enviada correctamente.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Color _getCategoriaColor(EventoCategoria categoria) {

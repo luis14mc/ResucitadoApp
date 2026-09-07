@@ -39,6 +39,7 @@ class HomeState {
     HorariosSummary? horariosSummary,
     bool? isLoading,
     String? error,
+    bool clearError = false,
   }) {
     return HomeState(
       sections: sections ?? this.sections,
@@ -47,7 +48,7 @@ class HomeState {
       lecturasSummary: lecturasSummary ?? this.lecturasSummary,
       horariosSummary: horariosSummary ?? this.horariosSummary,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: clearError ? null : error ?? this.error,
     );
   }
 }
@@ -83,7 +84,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
   /// Carga todos los datos de las features
   Future<void> loadAll() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       // Cargar datos de cada feature
@@ -169,7 +170,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
       final horariosHoy = horarios
           .where((h) =>
-              h.dia.name.toLowerCase() == diaHoy.toLowerCase() && h.activo)
+              (h.dia?.name.toLowerCase() ?? '') == diaHoy.toLowerCase() &&
+              h.activo)
           .toList();
 
       String? proximaMisa;

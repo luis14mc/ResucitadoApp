@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../models/lectura_model.dart';
 
@@ -35,12 +36,12 @@ class LecturasRemoteDataSourceImpl implements LecturasRemoteDataSource {
   Future<LecturaModel> getLecturasDelDia() async {
     try {
       print('GET: /lecturas/hoy');
-      final response = await dioClient.get('/lecturas/hoy');
+      final response = await dioClient.get(ApiConstants.lecturasHoy);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return LecturaModel.fromJson(extracted);
     } catch (e, stack) {
       print('ERROR IN getLecturasDelDia: $e\n$stack');
@@ -54,14 +55,13 @@ class LecturasRemoteDataSourceImpl implements LecturasRemoteDataSource {
       final formattedDate = fecha.toIso8601String().split('T')[0];
       print('GET: /lecturas with query fecha=$formattedDate');
       final response = await dioClient.get(
-        '/lecturas',
-        queryParameters: {'fecha': formattedDate},
+        ApiConstants.lecturasPorFecha(formattedDate),
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return LecturaModel.fromJson(extracted);
     } catch (e, stack) {
       print('ERROR IN getLecturasPorFecha: $e\n$stack');

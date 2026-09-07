@@ -8,7 +8,8 @@ import '../../domain/entities/oracion.dart';
 class OracionesCategoriaPage extends ConsumerWidget {
   final String categoria;
 
-  const OracionesCategoriaPage({Key? key, required this.categoria}) : super(key: key);
+  const OracionesCategoriaPage({Key? key, required this.categoria})
+      : super(key: key);
 
   String _getCategoryTitle(String cat) {
     switch (cat.toLowerCase()) {
@@ -58,11 +59,15 @@ class OracionesCategoriaPage extends ConsumerWidget {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(oracionesCategoriaProvider(categoria).notifier).loadPorCategoria(),
+        onRefresh: () => ref
+            .read(oracionesCategoriaProvider(categoria).notifier)
+            .loadPorCategoria(),
         child: () {
           switch (listState) {
             case DataStateInitial() || DataStateLoading():
-              return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+              return const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.primaryColor));
             case DataStateError(message: final errorMsg):
               return Center(
                 child: Padding(
@@ -70,21 +75,27 @@ class OracionesCategoriaPage extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 60, color: AppColors.primaryRed),
+                      const Icon(Icons.error_outline,
+                          size: 60, color: AppColors.primaryRed),
                       const SizedBox(height: AppTheme.spacingM),
                       Text(
                         'Error al cargar las oraciones.',
-                        style: AppTheme.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                        style: AppTheme.bodyLarge
+                            .copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: AppTheme.spacingS),
                       Text(
                         errorMsg,
                         textAlign: TextAlign.center,
-                        style: AppTheme.bodyMedium.copyWith(color: AppColors.mediumGray),
+                        style: AppTheme.bodyMedium
+                            .copyWith(color: AppColors.mediumGray),
                       ),
                       const SizedBox(height: AppTheme.spacingL),
                       ElevatedButton(
-                        onPressed: () => ref.read(oracionesCategoriaProvider(categoria).notifier).loadPorCategoria(),
+                        onPressed: () => ref
+                            .read(
+                                oracionesCategoriaProvider(categoria).notifier)
+                            .loadPorCategoria(),
                         child: const Text('Reintentar'),
                       ),
                     ],
@@ -102,7 +113,9 @@ class OracionesCategoriaPage extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.hourglass_empty, size: 80, color: AppColors.parishGold.withAlpha(128)),
+                        Icon(Icons.hourglass_empty,
+                            size: 80,
+                            color: AppColors.parishGold.withAlpha(128)),
                         const SizedBox(height: AppTheme.spacingL),
                         Text(
                           'No hay oraciones disponibles por el momento.',
@@ -110,22 +123,22 @@ class OracionesCategoriaPage extends ConsumerWidget {
                           style: AppTheme.bodyLarge.copyWith(
                             color: AppColors.mediumGray,
                             fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }
+                );
+              }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(AppTheme.spacingL),
-              itemCount: prayers.length,
-              itemBuilder: (context, index) {
-                final prayer = prayers[index];
-                return _buildOracionTile(context, prayer);
-              },
-            );
+              return ListView.builder(
+                padding: const EdgeInsets.all(AppTheme.spacingL),
+                itemCount: prayers.length,
+                itemBuilder: (context, index) {
+                  final prayer = prayers[index];
+                  return _buildOracionTile(context, prayer);
+                },
+              );
           }
         }(),
       ),

@@ -30,6 +30,7 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
     if (data is Map) {
       if (data.containsKey('results')) return _extractList(data['results']);
       if (data.containsKey('data')) return _extractList(data['data']);
+      if (data.containsKey('items')) return _extractList(data['items']);
     }
     return const [];
   }
@@ -40,10 +41,10 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
       print('GET: ${ApiConstants.santoDelDia}');
       final response = await dioClient.get(ApiConstants.santoDelDia);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return SantoModel.fromJson(extracted).toEntity();
     } catch (e, stack) {
       print('ERROR IN getSantoDelDia: $e\n$stack');
@@ -54,14 +55,17 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
   @override
   Future<List<Santo>> getSantosPorMes(int mes) async {
     try {
-      final path = '${ApiConstants.santosPorMes}/$mes';
+      final path = '${ApiConstants.santosPorMes}';
       print('GET: $path');
-      final response = await dioClient.get(path);
+      final response = await dioClient.get(
+        path,
+        queryParameters: {'mes': mes},
+      );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => SantoModel.fromJson(json).toEntity()).toList();
     } catch (e, stack) {
       print('ERROR IN getSantosPorMes: $e\n$stack');
@@ -79,10 +83,10 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
         queryParameters: {'fecha': formattedDate},
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => SantoModel.fromJson(json).toEntity()).toList();
     } catch (e, stack) {
       print('ERROR IN getSantosPorFecha: $e\n$stack');
@@ -99,10 +103,10 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
         queryParameters: {'search': query},
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => SantoModel.fromJson(json).toEntity()).toList();
     } catch (e, stack) {
       print('ERROR IN buscarSantos: $e\n$stack');
@@ -113,14 +117,14 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
   @override
   Future<Santo> getSantoPorId(String id) async {
     try {
-      final path = '${ApiConstants.santos}/$id';
+      final path = '${ApiConstants.santos}$id/';
       print('GET: $path');
       final response = await dioClient.get(path);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return SantoModel.fromJson(extracted).toEntity();
     } catch (e, stack) {
       print('ERROR IN getSantoPorId: $e\n$stack');
@@ -137,10 +141,10 @@ class SantosRemoteDataSourceImpl implements SantosRemoteDataSource {
         queryParameters: {'page': page, 'limit': limit},
       );
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
+
       return list.map((json) => SantoModel.fromJson(json).toEntity()).toList();
     } catch (e, stack) {
       print('ERROR IN getTodosSantos: $e\n$stack');

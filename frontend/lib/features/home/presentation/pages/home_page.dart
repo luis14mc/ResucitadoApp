@@ -121,7 +121,8 @@ class HomePage extends ConsumerWidget {
                               Text(
                                 "Parroquia Cristo Resucitado",
                                 style: AppTheme.bodyMedium.copyWith(
-                                  color: const Color.fromRGBO(255, 255, 255, 0.9),
+                                  color:
+                                      const Color.fromRGBO(255, 255, 255, 0.9),
                                 ),
                               ),
                             ],
@@ -182,7 +183,8 @@ class HomePage extends ConsumerWidget {
             final section = homeState.sections[index];
             return _buildModernCard(context, section);
           },
-          childCount: homeState.sections.isEmpty ? 7 : homeState.sections.length,
+          childCount:
+              homeState.sections.isEmpty ? 7 : homeState.sections.length,
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -253,99 +255,103 @@ class HomePage extends ConsumerWidget {
   }
 
   Widget _buildModernCard(BuildContext context, HomeSection section) {
-    return GestureDetector(
-      onTap: () => context.push(section.route),
-      child: Container(
-        padding: const EdgeInsets.all(AppTheme.spacingM),
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          boxShadow: AppTheme.mediumShadow,
-          border: Border.all(
-            color: AppColors.parishGold.withAlpha(51),
-            width: 1,
+    return Semantics(
+      button: true,
+      label: 'Abrir ${section.title}',
+      child: GestureDetector(
+        onTap: () => context.push(section.route),
+        child: Container(
+          padding: const EdgeInsets.all(AppTheme.spacingM),
+          decoration: BoxDecoration(
+            gradient: AppColors.cardGradient,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            boxShadow: AppTheme.mediumShadow,
+            border: Border.all(
+              color: AppColors.parishGold.withAlpha(51),
+              width: 1,
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Icono con badge de contador
-            Stack(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.goldGradient,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.parishGold.withAlpha(102),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icono con badge de contador
+              Stack(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.parishGold.withAlpha(102),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: AppColors.goldLight.withAlpha(77),
+                        width: 1,
                       ),
-                    ],
-                    border: Border.all(
-                      color: AppColors.goldLight.withAlpha(77),
-                      width: 1,
+                    ),
+                    child: Center(
+                      child: FaIcon(
+                        section.icon,
+                        size: 26,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: FaIcon(
-                      section.icon,
-                      size: 26,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                // Badge de contador
-                if (section.itemCount != null && section.itemCount! > 0)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryRed,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: Text(
-                        '${section.itemCount}',
-                        style: AppTheme.caption.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
+                  // Badge de contador
+                  if (section.itemCount != null && section.itemCount! > 0)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryRed,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Text(
+                          '${section.itemCount}',
+                          style: AppTheme.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppTheme.spacingM),
-            // Título
-            Text(
-              section.title,
-              style: AppTheme.bodyLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryRed,
-                letterSpacing: 0.3,
+                ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: AppTheme.spacingXS),
-            // Subtítulo
-            Text(
-              section.subtitle,
-              style: AppTheme.caption.copyWith(
-                color: AppColors.mediumGray,
-                fontWeight: FontWeight.w500,
+              const SizedBox(height: AppTheme.spacingM),
+              // Título
+              Text(
+                section.title,
+                style: AppTheme.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryRed,
+                  letterSpacing: 0.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              const SizedBox(height: AppTheme.spacingXS),
+              // Subtítulo
+              Text(
+                section.subtitle,
+                style: AppTheme.caption.copyWith(
+                  color: AppColors.mediumGray,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -358,96 +364,100 @@ class HomePage extends ConsumerWidget {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.spacingL),
-        child: GestureDetector(
-          onTap: () => context.push('/santoDelDia'),
-          child: Container(
-            padding: const EdgeInsets.all(AppTheme.spacingL),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.parishGold.withAlpha(38),
-                  Colors.white,
+        child: Semantics(
+          button: true,
+          label: 'Abrir Santo del Día',
+          child: GestureDetector(
+            onTap: () => context.push('/santoDelDia'),
+            child: Container(
+              padding: const EdgeInsets.all(AppTheme.spacingL),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.parishGold.withAlpha(38),
+                    Colors.white,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                boxShadow: AppTheme.mediumShadow,
+                border: Border.all(
+                  color: AppColors.parishGold.withAlpha(77),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Icono destacado
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.parishGold.withAlpha(102),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: AppColors.goldLight.withAlpha(102),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Center(
+                      child: FaIcon(
+                        FontAwesomeIcons.solidHeart,
+                        size: 36,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacingL),
+                  // Contenido
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Santo del Día',
+                          style: AppTheme.headingSmall.copyWith(
+                            color: AppColors.primaryRed,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacingXS),
+                        Text(
+                          santoSummary?.nombre ?? 'Cargando...',
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppColors.mediumGray,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Icono de flecha
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withAlpha(26),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-              boxShadow: AppTheme.mediumShadow,
-              border: Border.all(
-                color: AppColors.parishGold.withAlpha(77),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                // Icono destacado
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.goldGradient,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.parishGold.withAlpha(102),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: AppColors.goldLight.withAlpha(102),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Center(
-                    child: FaIcon(
-                      FontAwesomeIcons.solidHeart,
-                      size: 36,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppTheme.spacingL),
-                // Contenido
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Santo del Día',
-                        style: AppTheme.headingSmall.copyWith(
-                          color: AppColors.primaryRed,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: AppTheme.spacingXS),
-                      Text(
-                        santoSummary?.nombre ?? 'Cargando...',
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: AppColors.mediumGray,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                // Icono de flecha
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withAlpha(26),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: AppColors.primaryColor,
-                  ),
-                ),
-              ],
             ),
           ),
         ),

@@ -14,6 +14,9 @@ class DioClient {
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: Duration(milliseconds: ApiConstants.connectTimeout),
         receiveTimeout: Duration(milliseconds: ApiConstants.receiveTimeout),
+        sendTimeout: Duration(milliseconds: ApiConstants.sendTimeout),
+        validateStatus: (status) =>
+            status != null && status >= 200 && status < 300,
         headers: {
           'Content-Type': ApiConstants.contentType,
           'Accept': ApiConstants.accept,
@@ -121,9 +124,14 @@ class DioClient {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
-        final message =
-            error.response?.data?['message'] ?? 'Error del servidor';
-        return ServerException(message, statusCode: statusCode);
+        final data = error.response?.data;
+        final message = data is Map
+            ? (data['detail'] ?? data['message'] ?? data['error'])?.toString()
+            : data?.toString();
+        return ServerException(
+          message?.isNotEmpty == true ? message! : 'Error del servidor',
+          statusCode: statusCode,
+        );
 
       case DioExceptionType.connectionError:
         return const NetworkException('No hay conexión a internet');
@@ -132,7 +140,7 @@ class DioClient {
         return const NetworkException('Petición cancelada');
 
       default:
-        return NetworkException('Error de red: ${error.message}');
+        return NetworkException(error.message ?? 'Error de red');
     }
   }
 }

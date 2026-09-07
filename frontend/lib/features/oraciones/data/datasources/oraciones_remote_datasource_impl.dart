@@ -28,6 +28,7 @@ class OracionesRemoteDataSourceImpl implements OracionesRemoteDataSource {
     if (data is Map) {
       if (data.containsKey('results')) return _extractList(data['results']);
       if (data.containsKey('data')) return _extractList(data['data']);
+      if (data.containsKey('items')) return _extractList(data['items']);
     }
     return const [];
   }
@@ -38,11 +39,13 @@ class OracionesRemoteDataSourceImpl implements OracionesRemoteDataSource {
       print('GET: ${ApiConstants.oraciones}');
       final response = await dioClient.get(ApiConstants.oraciones);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
-      return list.map((json) => OracionModel.fromJson(json).toEntity()).toList();
+
+      return list
+          .map((json) => OracionModel.fromJson(json).toEntity())
+          .toList();
     } catch (e, stack) {
       print('ERROR IN getOraciones: $e\n$stack');
       throw ServerException('Error al obtener oraciones: $e');
@@ -55,11 +58,13 @@ class OracionesRemoteDataSourceImpl implements OracionesRemoteDataSource {
       print('GET: ${ApiConstants.oracionesDestacadas}');
       final response = await dioClient.get(ApiConstants.oracionesDestacadas);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
-      return list.map((json) => OracionModel.fromJson(json).toEntity()).toList();
+
+      return list
+          .map((json) => OracionModel.fromJson(json).toEntity())
+          .toList();
     } catch (e, stack) {
       print('ERROR IN getOracionesDestacadas: $e\n$stack');
       throw ServerException('Error al obtener oraciones destacadas: $e');
@@ -73,11 +78,13 @@ class OracionesRemoteDataSourceImpl implements OracionesRemoteDataSource {
       print('GET: $path');
       final response = await dioClient.get(path);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final list = _extractList(rawData);
-      
-      return list.map((json) => OracionModel.fromJson(json).toEntity()).toList();
+
+      return list
+          .map((json) => OracionModel.fromJson(json).toEntity())
+          .toList();
     } catch (e, stack) {
       print('ERROR IN getOracionesPorCategoria: $e\n$stack');
       throw ServerException('Error al obtener oraciones por categoría: $e');
@@ -91,10 +98,10 @@ class OracionesRemoteDataSourceImpl implements OracionesRemoteDataSource {
       print('GET: $path');
       final response = await dioClient.get(path);
       print('RESPONSE STATUS: ${response.statusCode}');
-      
+
       final rawData = response.data;
       final extracted = _extractMap(rawData);
-      
+
       return OracionModel.fromJson(extracted).toEntity();
     } catch (e, stack) {
       print('ERROR IN getOracionDetalle: $e\n$stack');

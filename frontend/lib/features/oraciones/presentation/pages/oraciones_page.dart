@@ -45,7 +45,8 @@ class OracionesPage extends ConsumerWidget {
           // 2. Título de Categorías
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
               child: Text(
                 'Categorías Oracionales',
                 style: AppTheme.headingSmall.copyWith(
@@ -129,13 +130,15 @@ class OracionesPage extends ConsumerWidget {
           ),
 
           // Espacio final
-          const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spacingXXL)),
+          const SliverToBoxAdapter(
+              child: SizedBox(height: AppTheme.spacingXXL)),
         ],
       ),
     );
   }
 
-  Widget _buildDestacadasSliver(BuildContext context, DataState<List<Oracion>> state) {
+  Widget _buildDestacadasSliver(
+      BuildContext context, DataState<List<Oracion>> state) {
     switch (state) {
       case DataStateInitial() || DataStateLoading():
         return const SliverToBoxAdapter(
@@ -149,13 +152,15 @@ class OracionesPage extends ConsumerWidget {
       case DataStateError():
         return const SliverToBoxAdapter(child: SizedBox.shrink());
       case DataStateSuccess(data: final prayers):
-        if (prayers.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        if (prayers.isEmpty)
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
         return SliverToBoxAdapter(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingL),
                 child: Text(
                   'Recomendadas',
                   style: AppTheme.headingSmall.copyWith(
@@ -169,7 +174,8 @@ class OracionesPage extends ConsumerWidget {
                 height: 140,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
                   itemCount: prayers.length,
                   itemBuilder: (context, index) {
                     final prayer = prayers[index];
@@ -189,7 +195,8 @@ class OracionesPage extends ConsumerWidget {
       onTap: () => context.push('/oraciones/${prayer.slug}'),
       child: Container(
         width: 250,
-        margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingXS, vertical: AppTheme.spacingXS),
+        margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingXS, vertical: AppTheme.spacingXS),
         padding: const EdgeInsets.all(AppTheme.spacingM),
         decoration: BoxDecoration(
           gradient: LinearGradient(

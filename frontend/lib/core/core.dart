@@ -22,6 +22,7 @@ export 'constants/app_constants.dart';
 
 // Utils
 export 'utils/date_utils.dart';
+export 'utils/json_utils.dart';
 export 'utils/string_utils.dart';
 
 // Base classes

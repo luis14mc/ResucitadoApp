@@ -15,49 +15,46 @@ class RetryInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (_shouldRetry(err) && err.requestOptions.extra['retryCount'] == null) {
-      err.requestOptions.extra['retryCount'] = 0;
-    }
+    var currentError = err;
+    var retryCount = err.requestOptions.extra['retryCount'] as int? ?? 0;
 
-    final retryCount = err.requestOptions.extra['retryCount'] as int? ?? 0;
-
-    if (_shouldRetry(err) && retryCount < maxRetries) {
-      err.requestOptions.extra['retryCount'] = retryCount + 1;
+    while (_shouldRetry(currentError) && retryCount < maxRetries) {
+      final request = currentError.requestOptions;
+      retryCount++;
+      request.extra['retryCount'] = retryCount;
 
       if (kDebugMode) {
-        debugPrint(
-            '🔄 Reintentando petición... (${retryCount + 1}/$maxRetries)');
+        debugPrint('🔄 Reintentando petición... ($retryCount/$maxRetries)');
       }
 
-      await Future.delayed(retryDelay * (retryCount + 1));
+      await Future.delayed(retryDelay * retryCount);
 
       try {
-        final dio = Dio();
-        // Copy base options from the original request
-        dio.options.baseUrl = err.requestOptions.baseUrl;
-        dio.options.connectTimeout = err.requestOptions.connectTimeout;
-        dio.options.receiveTimeout = err.requestOptions.receiveTimeout;
-        dio.options.sendTimeout = err.requestOptions.sendTimeout;
-
+        final dio = Dio(BaseOptions(
+          baseUrl: request.baseUrl,
+          connectTimeout: request.connectTimeout,
+          receiveTimeout: request.receiveTimeout,
+          sendTimeout: request.sendTimeout,
+          headers: request.headers,
+        ));
         final response = await dio.request(
-          err.requestOptions.path,
-          data: err.requestOptions.data,
-          queryParameters: err.requestOptions.queryParameters,
+          request.path,
+          data: request.data,
+          queryParameters: request.queryParameters,
           options: Options(
-            method: err.requestOptions.method,
-            headers: err.requestOptions.headers,
-            contentType: err.requestOptions.contentType,
-            responseType: err.requestOptions.responseType,
+            method: request.method,
+            contentType: request.contentType,
+            responseType: request.responseType,
           ),
         );
 
         return handler.resolve(response);
       } on DioException catch (e) {
-        return super.onError(e, handler);
+        currentError = e;
       }
     }
 
-    return super.onError(err, handler);
+    return super.onError(currentError, handler);
   }
 
   bool _shouldRetry(DioException err) {

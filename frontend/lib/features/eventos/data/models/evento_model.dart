@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/evento.dart';
+import '../../../../core/utils/json_utils.dart';
 
 part 'evento_model.g.dart';
 
@@ -39,7 +40,9 @@ class EventoModel extends Evento {
       catEnum = EventoCategoria.comunidad;
     } else if (catStr.contains('juven') || catStr.contains('juve')) {
       catEnum = EventoCategoria.juventud;
-    } else if (catStr.contains('form') || catStr.contains('cateq') || catStr.contains('retir')) {
+    } else if (catStr.contains('form') ||
+        catStr.contains('cateq') ||
+        catStr.contains('retir')) {
       catEnum = EventoCategoria.formacion;
     } else {
       catEnum = EventoCategoria.values.firstWhere(
@@ -65,23 +68,37 @@ class EventoModel extends Evento {
       id: (json['id'] ?? '').toString(),
       titulo: (json['titulo'] ?? '').toString(),
       descripcion: (json['descripcion'] ?? '').toString(),
-      fecha: json['fecha'] != null ? DateTime.tryParse(json['fecha'].toString()) ?? DateTime.now() : DateTime.now(),
-      hora: (json['hora'] ?? '').toString(),
-      lugar: (json['lugar'] ?? '').toString(),
+      fecha: JsonUtils.date(json, ['fecha']) ?? DateTime.now(),
+      hora: JsonUtils.string(json, ['hora']),
+      lugar: JsonUtils.string(json, ['lugar']),
       categoria: catEnum,
-      imagenUrl: json['imagenUrl']?.toString() ?? json['imagen_url']?.toString(),
-      esRecurrente: json['esRecurrente'] is bool ? json['esRecurrente'] as bool : false,
-      frecuenciaRecurrencia: json['frecuenciaRecurrencia']?.toString() ?? json['frecuencia_recurrencia']?.toString(),
-      maximoParticipantes: json['maximoParticipantes'] is int ? json['maximoParticipantes'] as int : null,
-      participantesActuales: json['participantesActuales'] is int ? json['participantesActuales'] as int : 0,
-      requiereInscripcion: json['requiereInscripcion'] is bool ? json['requiereInscripcion'] as bool : false,
-      contactoResponsable: json['contactoResponsable']?.toString() ?? json['contacto_responsable']?.toString(),
-      telefono: json['telefono']?.toString(),
-      email: json['email']?.toString(),
+      imagenUrl:
+          json['imagenUrl']?.toString() ?? json['imagen_url']?.toString(),
+      esRecurrente: JsonUtils.boolean(json, ['esRecurrente', 'es_recurrente']),
+      frecuenciaRecurrencia: JsonUtils.string(
+          json, ['frecuenciaRecurrencia', 'frecuencia_recurrencia'],
+          fallback: ''),
+      maximoParticipantes: JsonUtils.value(
+                  json, ['maximoParticipantes', 'maximo_participantes']) ==
+              null
+          ? null
+          : JsonUtils.integer(
+              json, ['maximoParticipantes', 'maximo_participantes']),
+      participantesActuales: JsonUtils.integer(
+          json, ['participantesActuales', 'participantes_actuales']),
+      requiereInscripcion: JsonUtils.boolean(
+          json, ['requiereInscripcion', 'requiere_inscripcion']),
+      contactoResponsable: JsonUtils.string(
+          json, ['contactoResponsable', 'contacto_responsable'],
+          fallback: ''),
+      telefono: JsonUtils.string(json, ['telefono'], fallback: ''),
+      email: JsonUtils.string(json, ['email'], fallback: ''),
       etiquetas: tags,
-      activo: json['activo'] is bool ? json['activo'] as bool : true,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now() : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now() : DateTime.now(),
+      activo: JsonUtils.boolean(json, ['activo'], fallback: true),
+      createdAt:
+          JsonUtils.date(json, ['createdAt', 'created_at']) ?? DateTime.now(),
+      updatedAt:
+          JsonUtils.date(json, ['updatedAt', 'updated_at']) ?? DateTime.now(),
     );
   }
 
